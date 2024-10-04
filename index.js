@@ -3,12 +3,16 @@ console.log("start");
 var providerNEW;
 var signerNEW;
 var userAccountNEW;
-const MasterChainID = 250; //250 is Fantom Mainnet, 64165
+var AAornot;
+const MasterChainID = 64165; //250 is Fantom Mainnet, 64165
 
  const call_type = {
   CONNECT: 1,
   SEND_CONTRACT: 2,
   FULL_SCREEN: 3,
+  NEW_ACCOUNT: 4,
+  CONNECT_AA: 5,
+  GET_BALANCE: 6
 };
 
 const response_type = {
@@ -18,6 +22,11 @@ const response_type = {
   ACCOUNT_NUMBER: 4,
   READ_RESPONSE: 5,
   ROTATE: 6,
+  UPDATE: 7,
+  WALLET: 8,
+  KEY: 9,
+  RECOVERY: 10,
+  BALANCE: 11
 };
 
 
@@ -29,7 +38,7 @@ const response_type = {
 
 // const web3 = new Web3(Web3.givenProvider) ;
 // const from = await web3.eth.getAccounts();
-
+/* ORIGINAL CONNECT WALLET WEB3*/ 
 async function ConnectWallet(){
   console.log("ConnectWallet()");
 
@@ -84,9 +93,227 @@ async function ConnectWallet(){
 
   console.log("ConnectWallet() getweb3 done");
 
-
+  AAornot = false;
   response(response_type.ACCOUNT_NUMBER, userAccountNEW);
+  
 }
+
+
+
+
+
+
+
+//################################### AA ####################################
+/**/
+const button1 = document.createElement('button');
+button1.textContent = '111'; // Set the button text
+
+// Add an event listener to the button
+button1.addEventListener('click', () => {
+    // Call the AA() function when the button is clicked
+    //CreateAndConnectWeb2Wallet(1);
+    CreateWeb2Wallet(1);
+});
+
+// Append the button to the document body
+document.body.appendChild(button1);
+
+
+/**/
+function CreateWeb2Wallet(){
+  const wallet = ethers.Wallet.createRandom();
+  AA_privateKey = wallet.privateKey;
+  AA_recipient = wallet.address;
+  console.log("Address:", wallet.address);
+  console.log("Private Key:", wallet.privateKey);
+  console.log("Mnemonic:", wallet.mnemonic.phrase);
+}
+
+
+// Step 1: Define your RPC URL and Chain ID
+const AA_rpcUrl = 'https://rpc.testnet.soniclabs.com';
+const AA_chainId = 64165;
+
+// Step 2: Define the provider with the custom RPC
+const AA_provider = new ethers.JsonRpcProvider(AA_rpcUrl, {
+  name: 'soniclabs-testnet',
+  chainId: AA_chainId,
+});
+console.log(AA_provider);
+// Step 3: Create or restore a wallet
+// If you want to create a new wallet, uncomment the following line
+// const AA_wallet = ethers.Wallet.createRandom();
+
+// If you want to use an existing wallet with a private key:
+//const AA_privateKey = '0xbec809822ba49af479831ae939f98280b5e8fd5c0d737099d484b447c94f5055';
+//const AA_recipient = '0x879CbB5C20506671F22D9085BC09b11b14E5Fa01'; // Replace with recipient address
+
+//const AA_privateKey = '0x9bd104d9735138271e084ae34c596bd82ff40bc5ac637b998bb81efb0e79294d';
+//const AA_recipient = '0xd1F555ba3b88A8eA0Cc0066119eFb47d98E32Ff7'; // Replace with recipient address
+
+//MASTER CONTRACT --- use this and will create several new one to rotate
+//**** store these faucet information in UNITY, pass it with key arg */
+const FAUCET_Key = '0x30b2b4b604ddd7d15162575ba83edc507e79eaf1d48d9f79dfa7067545728ef8';
+const FAUCET_recipient = '0xF131E9fCb2A9497e89B469271b873a3c06617793';
+
+var AA_wallet;
+
+
+async function getSBalance(walletAddress) {
+  const balanceInWei = await AA_provider.getBalance(walletAddress);
+  const balanceInEth = ethers.formatEther(balanceInWei);
+  console.log(balanceInEth);
+  
+  response(response_type.BALANCE, balanceInEth);
+}
+
+//########THIS IS AA VERSION,  there is another web3 version of ConnectWallet
+async function CreateAndConnectWeb2Wallet(fkey){ 
+  //After player decided to create an account/with guest login/google or apple/
+  //if the logged in account has no WALLET then run this function!
+  //create them a new web2 wallet (means wallet linked to web2)
+  //this is connecting newly created wallet. BUT need to transfer gas to it.
+  //So need to call a faucet function with faucet key.
+
+  //Create a wallet for web3 account after they register web2
+  const wallet = ethers.Wallet.createRandom();
+  var AA_privateKey = wallet.privateKey;
+  var AA_recipient = wallet.address;
+  console.log("Address:", wallet.address);
+  console.log("Private Key:", wallet.privateKey);
+  console.log("Mnemonic:", wallet.mnemonic.phrase);
+  console.log("Create new AA and integrated");
+
+  AA_wallet = new ethers.Wallet(AA_privateKey, AA_provider);
+ 
+  //********UNITY have to provide they key but now i use preset one first
+  //*******const faucet_wallet = new ethers.Wallet(fkey, AA_provider);
+  const faucet_master = new ethers.Wallet(FAUCET_Key, AA_provider);
+  const tx = {
+    to: AA_recipient,
+    value: amountInWei
+  };
+  const faucetContractAddress = '0xEEAcFf7bD72CF5c2DBB425815C9D0cf2f09cf20f';
+  const faucetABI = [
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "recipient",
+                "type": "address"
+            }
+        ],
+        "name": "distributeFaucet",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+  ];
+  const faucetContract = new ethers.Contract(faucetContractAddress, faucetABI, faucet_master);
+
+
+  try {
+    // Call the distributeFaucet function
+    const tx = await faucetContract.distributeFaucet(AA_recipient);
+    
+    // Wait for the transaction to be mined
+    const receipt = await tx.wait();
+    
+    console.log('Faucet distribution successful!');
+    console.log('Transaction hash:', receipt.transactionHash);
+    console.log('Gas used:', receipt.gasUsed.toString());
+  } catch (error) {
+      console.error('Error distributing faucet:', error.message);
+  }
+
+    console.log(AA_provider);
+    const network = await AA_provider.getNetwork();
+    console.log("network:", network);
+    var chainId = network.chainId;
+    // Convert chainId to a number before comparison
+    chainId = parseInt(chainId, 10);
+    console.log("Chain ID:", chainId);
+
+    // Check if chain ID is not 250
+    if (chainId !== MasterChainID) {
+      switchToFantom();
+      alert("Switch to Fantom Network before Connecting."); // Display alert pop-up
+      return;
+    }
+
+    // It also provides an opportunity to request access to write
+    // operations, which will be performed by the private key
+    // that MetaMask manages for the user.
+   // signerNEW = await providerNEW.getSigner();
+ 
+
+  console.log(AA_recipient);
+
+  console.log("Connect new AA Wallet() getweb3 done");
+
+  AAornot = true;
+  response(response_type.ACCOUNT_NUMBER, AA_recipient);
+  response(response_type.WALLET, AA_recipient);
+  response(response_type.KEY, AA_privateKey);
+  response(response_type.RECOVERY, wallet.mnemonic.phrase);
+  AAornot = true;
+
+}
+
+async function ConnectAAWallet(aawalletaddress, aakey){ 
+  //Assume old player logging in their web2 account
+  //this is connecting created wallet from cloud. 
+  //the arg should be the wallet.
+
+  //Create a wallet for web3 account after they register web2
+  var AA_privateKey = aakey;
+  var AA_recipient = aawalletaddress;
+  console.log("Address:", AA_recipient);
+  //console.log("Private Key:", wallet.privateKey);
+  //console.log("Mnemonic:", wallet.mnemonic.phrase);
+  console.log("ConnectAAWallet() AA integrated");
+
+  AA_wallet = new ethers.Wallet(AA_privateKey, AA_provider);
+ 
+  console.log(AA_provider);
+  const network = await AA_provider.getNetwork();
+  console.log("network:", network);
+  var chainId = network.chainId;
+  // Convert chainId to a number before comparison
+  chainId = parseInt(chainId, 10);
+  console.log("Chain ID:", chainId);
+
+  // Check if chain ID is not 250
+  if (chainId !== MasterChainID) {
+    switchToFantom();
+    alert("Switch to Fantom Network before Connecting."); // Display alert pop-up
+    return;
+  }
+
+    // It also provides an opportunity to request access to write
+    // operations, which will be performed by the private key
+    // that MetaMask manages for the user.
+   // signerNEW = await providerNEW.getSigner();
+ 
+
+  console.log(AA_recipient);
+
+  console.log("Connect new AA Wallet() getweb3 done");
+
+  AAornot = true;
+  response(response_type.ACCOUNT_NUMBER, AA_recipient);
+  AAornot = true;
+
+}
+
+
+
+//################################ AA END  #################################
+
+import("./reroute.js")
+// walkaround();
+
 
 var isfullscreen = false;
 function EnterFullScreen(){
@@ -110,6 +337,7 @@ function JsCallFunction(type, arg_string){
 
   if(type == call_type.CONNECT){    
     ConnectWallet()  
+    //CreateAndConnectWeb2Wallet();
   }  
   else if(type == call_type.FULL_SCREEN){    
     EnterFullScreen()  
@@ -139,6 +367,42 @@ function JsCallFunction(type, arg_string){
     }
 
   }
+  else if (type == call_type.NEW_ACCOUNT){
+    if (arg_string.startsWith("<sendContract>") && arg_string.endsWith("</sendContract>")){
+      const faucetkey = arg_string.substring("<sendContract>".length).slice(0,arg_string.length-("<sendContract>".length+"</sendContract>".length));
+      
+      CreateAndConnectWeb2Wallet(faucetkey);
+      // create new account for AA
+
+    }
+  }
+  else if (type == call_type.CONNECT_AA){
+    if (arg_string.startsWith("<sendContract>") && arg_string.endsWith("</sendContract>")){
+      const removeSyntax = arg_string.substring("<sendContract>".length).slice(0,arg_string.length-("<sendContract>".length+"</sendContract>".length));
+      const splited_text = removeSyntax.split("_%_");
+      
+      if (splited_text.length == 2){
+
+        var aawalletaddress   = splited_text[0];
+        var aakey     = splited_text[1];
+
+        ConnectAAWallet(aawalletaddress,aakey)
+        //get addres and key from cloud to connect AA wallet
+
+      }
+
+    }
+  }
+  else if (type == call_type.GET_BALANCE){
+    if (arg_string.startsWith("<sendContract>") && arg_string.endsWith("</sendContract>")){
+      const walletaddress = arg_string.substring("<sendContract>".length).slice(0,arg_string.length-("<sendContract>".length+"</sendContract>".length));
+      
+      getSBalance(walletaddress);
+      // get S balance to display
+
+    }
+  }
+
 
 }
 window.JsCallFunction = JsCallFunction;
@@ -250,9 +514,181 @@ async function readContract(id, method, abi, contract, args) {
   });
 }
 //---------------------------------- SEND --------------------------------------------------------------------------------
-async function sendContract(id, method, abi, contract, args, value, gasLimit, gasPrice) {
+async function sendContract(id, method, abi, contract, args, value, gasLimit, gasPrice) { //conventional web3 wallet send
+  //////////////// NO AA //////////////////////////////////////////////////////////////
+  if (AAornot == false) {
+    console.log("SEND CONTRACTTTT");
+    // Get network object
+    providerNEW = new ethers.BrowserProvider(window.ethereum);
+    const network = await providerNEW.getNetwork();
+    var chainId = network.chainId;
+    // Convert chainId to a number before comparison
+    chainId = parseInt(chainId, 10);
+    console.log("Chain ID:", chainId);
+
+    // Check if chain ID is not 250
+    if (chainId !== MasterChainID) {
+      switchToFantom();
+      response(response_type.ERROR, method + "_%%_" + "wrong RPC, switch to Fantom Network and Retry.");
+    } else {
+      //const from = (await web3.eth.getAccounts())[0];
+      const contracts = new ethers.Contract(contract, abi, providerNEW);
+      const contractWithSigner = contracts.connect(signerNEW);
+      
+      var options = {};
+      if (gasLimit != "") { options.gasLimit = gasLimit; }
+      if (gasPrice != "") { options.gasPrice = gasPrice; }
+      if (value    != "") { options.value    = value; }
+
+      console.log("waiting metamask");
+      
+      //console.log(from)
+      console.log(id)
+      console.log(contract)
+      console.log(method)
+      console.log(args)
+      console.log(options);
+      console.log(value)
+      console.log(gasLimit)
+      console.log(gasPrice)
+      
+      try {
+        console.log("HERE123");
+        console.log(...JSON.parse(args));
+        const transaction = await contractWithSigner[method](...JSON.parse(args), options);
+        console.log("HERE321");
+        const startTime = new Date();
+        // Wait for the transaction to be mined and get receipt
+        console.log(transaction.hash);
+        response(response_type.HASH, method);
+        const receipt = await getTransactionReceiptWithRetry(transaction.hash, 120);
+        console.log("USE OTHER METHOD",receipt )
+        const endTime2 = new Date();
+        const timeTaken2 = endTime2 - startTime;
+        console.log('First Time taken (ms):', timeTaken2);
+        //----------------------------------------
+        console.log('log', receipt.logs);
+        const parsedLogs = [];
+        for (const log of receipt.logs) {
+          const parsedLog = contracts.interface.parseLog(log);
+          
+          if (parsedLog) {
+            parsedLogs.push(parsedLog);
+          } else {
+            parsedLogs.push(log);
+          }
+        }
+        console.log("this is parsed log: ", parsedLogs);
+        // Now parsedLogs contains the parsed logs and raw logs if they didn't match the ABI
+        
+
+        const unwraplog = unwrapProxy(parsedLogs);
+        console.log("Unwrapped proxy: ",unwraplog);
+
+        
+        const serializelog = convertBigIntsToStrings(unwraplog);
+        console.log("serialize log: ",serializelog);
+
+        const jsonlog = JSON.stringify(serializelog);
+        console.log("This is JSONstringfy: ",jsonlog);
+        response(response_type.RECEIPT, method + "_%%_" + JSON.stringify(serializelog));
+        return receipt;
+      } catch (error) {
+        console.error('Error sending transaction:', error);
+        response(response_type.ERROR, method + "_%%_" + error.message);
+        //throw error; // rethrow the error to handle it at a higher level
+      }
+    }  
+  } else { //////////////  AA is TRUE   ///////////////////////////////////////////////
+    console.log("SEND AA CONTRACTTTT");
+    // Get network object
+    providerNEW = AA_provider ;
+    const network = await providerNEW.getNetwork();
+    var chainId = network.chainId;
+    // Convert chainId to a number before comparison
+    chainId = parseInt(chainId, 10);
+    console.log("Chain ID:", chainId);
+
+    // Check if chain ID is not 250
+    if (chainId !== MasterChainID) {
+      switchToFantom();
+      response(response_type.ERROR, method + "_%%_" + "wrong RPC, switch to Fantom Network and Retry.");
+    } else { 
+      //const from = (await web3.eth.getAccounts())[0];
+      const contracts = new ethers.Contract(contract, abi, providerNEW);
+      const contractWithSigner = contracts.connect(AA_wallet);
+      
+      var options = {};
+      if (gasLimit != "") { options.gasLimit = gasLimit; }
+      if (gasPrice != "") { options.gasPrice = gasPrice; }
+      if (value    != "") { options.value    = value; }
+
+      console.log("waiting metamask");
+      
+      //console.log(from)
+      console.log(id)
+      console.log(contract)
+      console.log(method)
+      console.log(args)
+      console.log(options);
+      console.log(value)
+      console.log(gasLimit)
+      console.log(gasPrice)
+      
+      try {
+        console.log("HERE123");
+        console.log(...JSON.parse(args));
+        const transaction = await contractWithSigner[method](...JSON.parse(args), options);
+        console.log("HERE321");
+        const startTime = new Date();
+        // Wait for the transaction to be mined and get receipt
+        console.log(transaction.hash);
+        response(response_type.HASH, method);
+        const receipt = await getTransactionReceiptWithRetry(transaction.hash, 120);
+        console.log("USE OTHER METHOD",receipt )
+        const endTime2 = new Date();
+        const timeTaken2 = endTime2 - startTime;
+        console.log('First Time taken (ms):', timeTaken2);
+        //----------------------------------------
+        console.log('log', receipt.logs);
+        const parsedLogs = [];
+        for (const log of receipt.logs) {
+          const parsedLog = contracts.interface.parseLog(log);
+          
+          if (parsedLog) {
+            parsedLogs.push(parsedLog);
+          } else {
+            parsedLogs.push(log);
+          }
+        }
+        console.log("this is parsed log: ", parsedLogs);
+        // Now parsedLogs contains the parsed logs and raw logs if they didn't match the ABI
+        
+
+        const unwraplog = unwrapProxy(parsedLogs);
+        console.log("Unwrapped proxy: ",unwraplog);
+
+        
+        const serializelog = convertBigIntsToStrings(unwraplog);
+        console.log("serialize log: ",serializelog);
+
+        const jsonlog = JSON.stringify(serializelog);
+        console.log("This is JSONstringfy: ",jsonlog);
+        response(response_type.RECEIPT, method + "_%%_" + JSON.stringify(serializelog));
+        return receipt;
+      } catch (error) {
+        console.error('Error sending transaction:', error);
+        response(response_type.ERROR, method + "_%%_" + error.message);
+        //throw error; // rethrow the error to handle it at a higher level
+      }
+    }  
+  }
+}
+//############## AA SEND CONTRACT ###################
+async function sendContractAA(id, method, abi, contract, args, value, gasLimit, gasPrice) { //for going with AA way, call this instead.
+  console.log("SEND AA CONTRACTTTT");
   // Get network object
-  providerNEW = new ethers.BrowserProvider(window.ethereum);
+  providerNEW = AA_provider ;
   const network = await providerNEW.getNetwork();
   var chainId = network.chainId;
   // Convert chainId to a number before comparison
@@ -263,10 +699,10 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
   if (chainId !== MasterChainID) {
     switchToFantom();
     response(response_type.ERROR, method + "_%%_" + "wrong RPC, switch to Fantom Network and Retry.");
-  } else {
+  } else { 
     //const from = (await web3.eth.getAccounts())[0];
     const contracts = new ethers.Contract(contract, abi, providerNEW);
-    const contractWithSigner = contracts.connect(signerNEW);
+    const contractWithSigner = contracts.connect(AA_wallet);
     
     var options = {};
     if (gasLimit != "") { options.gasLimit = gasLimit; }
