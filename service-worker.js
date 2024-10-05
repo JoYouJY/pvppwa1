@@ -96,6 +96,6 @@ function checkForUpdates() {
       }
     });
 }
-
+checkForUpdates();
 // Periodically check for updates (e.g., every hour)
 setInterval(checkForUpdates, 60 * 60 * 1000);
