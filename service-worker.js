@@ -1,7 +1,4 @@
-const BASE_CACHE_NAME = 'fa-rpg-cache-v';
-let CURRENT_CACHE_NAME = BASE_CACHE_NAME + '1';
-const VERSION_FILE = '/version.json';
-
+const CACHE_NAME = 'fa-rpg-cache-v1';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -24,6 +21,7 @@ const urlsToCache = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
+<<<<<<< HEAD
     fetch(VERSION_FILE, { cache: 'no-cache' })
       .then(response => response.json())
       .then(version => {
@@ -31,12 +29,17 @@ self.addEventListener('install', (event) => {
         return caches.open(CURRENT_CACHE_NAME);
       })
       .then(cache => {
+=======
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+>>>>>>> parent of 0e4cb56 (add version checking for update pwa)
         return cache.addAll(urlsToCache.map(url => new Request(url, {credentials: 'same-origin'})));
       })
       .then(() => self.skipWaiting())
   );
 });
 
+<<<<<<< HEAD
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -58,6 +61,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+=======
+self.addEventListener('fetch', (event) => {
+>>>>>>> parent of 0e4cb56 (add version checking for update pwa)
   event.respondWith(
     fetch(event.request)
       .then(networkResponse => {
@@ -68,10 +74,27 @@ self.addEventListener('fetch', (event) => {
           });
           return networkResponse;
         }
+<<<<<<< HEAD
         throw new Error('Network response was not ok.');
+=======
+        return fetch(event.request).then(
+          (response) => {
+            if(!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+            return response;
+          }
+        );
+>>>>>>> parent of 0e4cb56 (add version checking for update pwa)
       })
       .catch(() => caches.match(event.request))
   );
+<<<<<<< HEAD
 });
 
 self.addEventListener('message', (event) => {
@@ -91,3 +114,6 @@ function checkForUpdates() {
       }
     });
 }
+=======
+});
+>>>>>>> parent of 0e4cb56 (add version checking for update pwa)
