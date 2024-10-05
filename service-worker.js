@@ -33,7 +33,7 @@ self.addEventListener('install', (event) => {
       .then(cache => {
         return cache.addAll(urlsToCache.map(url => new Request(url, {credentials: 'same-origin'})));
       })
-      .then(() => self.skipWaiting()) // Activate the new service worker immediately
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -46,7 +46,7 @@ self.addEventListener('activate', (event) => {
             return caches.delete(cacheName);
           }
         }),
-        self.clients.claim() // Take control of all open clients
+        self.clients.claim()
       ]);
     })
   );
@@ -54,7 +54,6 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.url.includes(VERSION_FILE)) {
-    // Always fetch the version file from the network
     event.respondWith(fetch(event.request));
     return;
   }
@@ -76,21 +75,19 @@ self.addEventListener('fetch', (event) => {
 });
 
 self.addEventListener('message', (event) => {
-  if (event.data === 'skipWaiting') {
-    self.skipWaiting();
+  if (event.data === 'checkForUpdates') {
+    checkForUpdates();
   }
 });
 
-// Check for updates
 function checkForUpdates() {
   return fetch(VERSION_FILE, { cache: 'no-cache' })
     .then(response => response.json())
     .then(versionData => {
-      if (CURRENT_CACHE_NAME !== BASE_CACHE_NAME + versionData.version) {
+      const newCacheName = BASE_CACHE_NAME + versionData.version;
+      if (CURRENT_CACHE_NAME !== newCacheName) {
+        CURRENT_CACHE_NAME = newCacheName;
         return self.registration.update();
       }
     });
 }
-checkForUpdates();
-// Periodically check for updates (e.g., every hour)
-setInterval(checkForUpdates, 60 * 60 * 1000);

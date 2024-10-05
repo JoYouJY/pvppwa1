@@ -27,7 +27,7 @@
     </style>
   <!--<body style="background-image: url('https://assets.zyrosite.com/mxBlyJk3v4f0qnxK/jojo-art-YX4XO87g1KtqLDE8.jpg');">--> 
     <!--body style="background-color: #000000d9;"></body-->
-    <body style="background-color: #e6174b;"></body>
+    <body style="background-color: #ece82e;"></body>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -260,70 +260,41 @@
 
 <!--------------------------------------->
 <script>
+  let registration;
+
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(registration => {
-        console.log('Service Worker registered with scope:', registration.scope);
-
-        // Check for updates on page load
-        registration.update();
-
-        // Check for updates when the page becomes visible
-        document.addEventListener('visibilitychange', () => {
-          if (!document.hidden) {
-            registration.update();
-          }
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(reg => {
+          registration = reg;
+          console.log('Service Worker registered with scope:', reg.scope);
+          checkForUpdates();
+        })
+        .catch(error => {
+          console.error('Service Worker registration failed:', error);
         });
-
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed') {
-              if (navigator.serviceWorker.controller) {
-                showUpdatePopup();
-              }
-            }
-          });
-        });
-      })
-      .catch(error => {
-        console.error('Service Worker registration failed:', error);
-      });
-  }
-
-  function showUpdatePopup() {
-    const popup = document.createElement('div');
-    popup.innerHTML = `
-      <div style="position: fixed; bottom: 20px; right: 20px; background: #f0f0f0; padding: 15px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
-        <p>A new version is available. Update now?</p>
-        <button onclick="updateServiceWorker()">Update</button>
-      </div>
-    `;
-    document.body.appendChild(popup);
-  }
-
-  function updateServiceWorker() {
-    navigator.serviceWorker.getRegistration().then(reg => {
-      if (reg.waiting) {
-        reg.waiting.postMessage('skipWaiting');
-      }
     });
   }
 
-  let refreshing = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!refreshing) {
-      window.location.reload();
-      refreshing = true;
+  function checkForUpdates() {
+    if (registration && registration.active) {
+      registration.active.postMessage('checkForUpdates');
+    }
+  }
+
+  // Check for updates when the page becomes visible
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      checkForUpdates();
     }
   });
 
-  // Force update check on page load
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.getRegistration().then(reg => {
-      if (reg) reg.update();
-    });
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
   });
+
+  // Check for updates every 5 minutes while the app is open
+  setInterval(checkForUpdates, 5 * 60 * 1000);
 </script>
 
 </html>
