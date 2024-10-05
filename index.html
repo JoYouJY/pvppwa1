@@ -11,7 +11,7 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="TemplateData/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.2/ethers.umd.js"></script>
-    
+
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#000000">
   </head>
@@ -27,7 +27,7 @@
     </style>
   <!--<body style="background-image: url('https://assets.zyrosite.com/mxBlyJk3v4f0qnxK/jojo-art-YX4XO87g1KtqLDE8.jpg');">--> 
     <!--body style="background-color: #000000d9;"></body-->
-    <body style="background-color: #edd6d6;"></body>
+    <body style="background-color: #000000;"></body>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -41,10 +41,10 @@
         });
       }
     </script>
-    
-     
+
+
     <script>
-      
+
       function clearCache() {
         o = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
         var t = {
@@ -57,7 +57,7 @@
       }
     </script>
     <div id="unity-container" class="unity-desktop">
-           
+
       <canvas id="unity-canvas" width=1280 height=720 ></canvas>
       <div id="unity-loading-bar">
         <div id="unity-logo"></div>
@@ -197,30 +197,26 @@
       };
       document.body.appendChild(script);
     </script>
-    
+
     <script>
       console.log('gashere');
       // Connect to the Web3 provider
       //const web3 = new Web3('https://rpc.ankr.com/fantom');
       //const web3 = new Web3('https://rpcapi.sonic.fantom.network/');
 
-      
+
       // Retrieve the current gas price
       /*
       window.getAggressiveGasPrice = async function() {
       try {
         // Retrieve the current gas price
         const gasPrice = await web3.eth.getGasPrice();
-
         // Convert the gas price to BigInt
         const gasPriceBigInt = BigInt(gasPrice);
-
         // Adjust the gas price by multiplying with a factor (e.g., 2 for 100% increase)
         const aggressiveGasPrice = gasPriceBigInt * BigInt(15) / BigInt(10); // Multiplies by 1.5 as an example
-
         // Convert the gas price to Gwei or other units if desired
         const aggressiveGasPriceGwei = web3.utils.fromWei(aggressiveGasPrice.toString(), 'gwei');
-
         console.log('Aggressive gas price:', aggressiveGasPriceGwei, 'Gwei');
         window.unityInstance.SendMessage("Web3Manager", "UpdateGasPrice", aggressiveGasPrice.toString());
         return aggressiveGasPrice.toString(); // Return the aggressive gas price
@@ -229,7 +225,6 @@
         throw error; // Throw the error
       }
     };
-
     let zzz = window.getAggressiveGasPrice();
     console.log('zzzAggressive gas price:', zzz);
  */ 
@@ -237,12 +232,12 @@
 
 <script>
   let deferredPrompt;
-  
+
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
   });
-  
+
   function showInstallPrompt() {
     if (deferredPrompt) {
       deferredPrompt.prompt();
@@ -258,47 +253,6 @@
   }
   </script>
 
-<<<<<<< HEAD
-<!--------------------------------------->
-<script>
-  let registration;
 
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(reg => {
-          registration = reg;
-          console.log('Service Worker registered with scope:', reg.scope);
-          checkForUpdates();
-        })
-        .catch(error => {
-          console.error('Service Worker registration failed:', error);
-        });
-    });
-  }
-
-  function checkForUpdates() {
-    if (registration && registration.active) {
-      registration.active.postMessage('checkForUpdates');
-    }
-  }
-
-  // Check for updates when the page becomes visible
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      checkForUpdates();
-    }
-  });
-
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    window.location.reload();
-  });
-
-  // Check for updates every 5 minutes while the app is open
-  setInterval(checkForUpdates, 5 * 60 * 1000);
-</script>
-=======
-
->>>>>>> parent of 0e4cb56 (add version checking for update pwa)
 
 </html>
