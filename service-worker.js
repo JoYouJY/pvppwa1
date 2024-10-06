@@ -49,28 +49,29 @@ self.addEventListener('activate', (event) => {
 
 // Fetch handler
 self.addEventListener('fetch', (event) => {
-  if (event.request.url.includes('/version.json')) {
-    // Always fetch from the network for version.json
-    event.respondWith(fetch(event.request));
-  } else {
-    // For other files, try the cache first
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        return response || fetch(event.request).then((networkResponse) => {
-          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-            return networkResponse;
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      if (response) {
+        // If we have a cached response, check if we should update it
+        fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache); // Update cache
+            });
           }
-
-          // Clone and cache the new network response
+        });
+        return response; // Return the cached response
+      }
+      return fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
+            cache.put(event.request, responseToCache); // Cache the new response
           });
-
-          return networkResponse;
-        });
-      })
-    );
-  }
+        }
+        return networkResponse; // Return network response
+      });
+    })
+  );
 });
-
