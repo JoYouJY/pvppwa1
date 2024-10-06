@@ -48,24 +48,23 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch handler to serve cached content and update cache if needed
+// Fetch handler with network fallback for version.json
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
-      if (response) {
-        return response; // Return from cache
-      }
-      return fetch(event.request).then((response) => {
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response;
+      // Try network request if cache is empty
+      return response || fetch(event.request).then((networkResponse) => {
+        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+          return networkResponse;
         }
 
-        const responseToCache = response.clone();
+        // Cache the new network response
+        const responseToCache = networkResponse.clone();
         caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache); // Update cache with new response
+          cache.put(event.request, responseToCache);
         });
 
-        return response;
+        return networkResponse;
       });
     })
   );

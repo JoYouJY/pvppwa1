@@ -252,33 +252,37 @@
     }
   }
 //-----------------------------version checking-------------------------------------------------
-  async function checkForUpdate() {
+async function checkForUpdate() {
+  try {
     const currentVersion = await getCachedVersion();
     const latestVersion = await fetchLatestVersion();
 
-    if (latestVersion && currentVersion !== latestVersion) {
+    if (latestVersion && currentVersion && currentVersion !== latestVersion) {
       console.log('New version available:', latestVersion);
-      // Force a hard reload if a new version is detected
+      // Proceed to clear caches and force reload
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
           for (let registration of registrations) {
-            registration.unregister();  // Unregister the old service worker
+            registration.unregister(); // Unregister old service worker
           }
         }).then(() => {
           // Clear all caches
           caches.keys().then((cacheNames) => {
             cacheNames.forEach((cacheName) => {
-              caches.delete(cacheName);  // Delete each cache
+              caches.delete(cacheName); // Delete each cache
             });
           }).then(() => {
-            // Reload the page to fetch new content
+            // Reload page to fetch new content
             window.location.reload(true);
           });
         });
       }
-
     }
+  } catch (error) {
+    console.error('Error during version check:', error);
   }
+}
+
 
   // Function to fetch the latest version.json from the server
   async function fetchLatestVersion() {
