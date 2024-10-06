@@ -1,8 +1,8 @@
 const CACHE_NAME = 'fa-rpg-cache-v1';
 const urlsToCache = [
   '/',
-  '/version.json',
   '/index.html',
+  '/version.json', // This file should always be revalidated
   '/TemplateData/style.css',
   '/index.js',
   '/reroute.js',
@@ -20,7 +20,7 @@ const urlsToCache = [
   '/TemplateData/progress-bar-full-dark.png'
 ];
 
-// During the installation, cache the assets
+// During installation, cache important files
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -29,8 +29,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-
-// Activate and clean up old caches
+// Activate the service worker and remove old caches
 self.addEventListener('activate', (event) => {
   const cacheWhitelist = [CACHE_NAME]; // Only keep the current version
 
@@ -48,24 +47,30 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch handler with network fallback for version.json
+// Fetch handler
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Try network request if cache is empty
-      return response || fetch(event.request).then((networkResponse) => {
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+  if (event.request.url.includes('/version.json')) {
+    // Always fetch from the network for version.json
+    event.respondWith(fetch(event.request));
+  } else {
+    // For other files, try the cache first
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        return response || fetch(event.request).then((networkResponse) => {
+          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+            return networkResponse;
+          }
+
+          // Clone and cache the new network response
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+
           return networkResponse;
-        }
-
-        // Cache the new network response
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
         });
-
-        return networkResponse;
-      });
-    })
-  );
+      })
+    );
+  }
 });
+

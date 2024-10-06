@@ -27,7 +27,7 @@
     </style>
   <!--<body style="background-image: url('https://assets.zyrosite.com/mxBlyJk3v4f0qnxK/jojo-art-YX4XO87g1KtqLDE8.jpg');">--> 
     <!--body style="background-color: #000000d9;"></body-->
-    <body style="background-color: #51e30e;"></body>
+    <body style="background-color: #1ab1db;"></body>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -254,13 +254,16 @@
 //-----------------------------version checking-------------------------------------------------
 async function checkForUpdate() {
   try {
-    const currentVersion = await getCachedVersion();
-    const latestVersion = await fetchLatestVersion();
-    console.log('CURRENT version:',currentVersion);
-    console.log('LATEST version:',latestVersion);
+    const currentVersion = await getCachedVersion(); // Get the version from the cache
+    const latestVersion = await fetchLatestVersion(); // Fetch the latest version from server
 
+    console.log('CURRENT version:', currentVersion);
+    console.log('LATEST version:', latestVersion);
+
+    // Compare versions, refresh if a new version is detected
     if (latestVersion && currentVersion && currentVersion !== latestVersion) {
       console.log('New version available:', latestVersion);
+
       // Proceed to clear caches and force reload
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -274,7 +277,7 @@ async function checkForUpdate() {
               caches.delete(cacheName); // Delete each cache
             });
           }).then(() => {
-            // Reload page to fetch new content
+            // Reload page to fetch new content and rebuild cache
             window.location.reload(true);
           });
         });
@@ -284,6 +287,7 @@ async function checkForUpdate() {
     console.error('Error during version check:', error);
   }
 }
+
 
 
   // Function to fetch the latest version.json from the server
