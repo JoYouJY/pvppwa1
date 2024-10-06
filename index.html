@@ -239,6 +239,28 @@
       });
     }
   }
+  // Function to create a button and append it to the body
+  function createInstallButton() {
+    // Create a new button element
+    const button = document.createElement('button');
+
+    // Set button text
+    button.innerText = 'Install';
+
+    // Add a click event listener to the button that calls showInstallPrompt
+    button.addEventListener('click', showInstallPrompt);
+
+    // Append the button to the body (or any other desired container)
+    document.body.appendChild(button);
+  }
+
+  // Call the function to create and display the install button
+  createInstallButton();
+
+
+
+  
+
 //-----------------------------version checking-------------------------------------------------
 
 async function checkForUpdate() {
