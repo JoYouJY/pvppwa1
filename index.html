@@ -251,6 +251,77 @@
       });
     }
   }
+//-----------------------------version checking-------------------------------------------------
+  async function checkForUpdate() {
+    const currentVersion = await getCachedVersion();
+    const latestVersion = await fetchLatestVersion();
+
+    if (latestVersion && currentVersion !== latestVersion) {
+      console.log('New version available:', latestVersion);
+      // Force a hard reload if a new version is detected
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (let registration of registrations) {
+            registration.unregister();  // Unregister the old service worker
+          }
+        }).then(() => {
+          // Clear all caches
+          caches.keys().then((cacheNames) => {
+            cacheNames.forEach((cacheName) => {
+              caches.delete(cacheName);  // Delete each cache
+            });
+          }).then(() => {
+            // Reload the page to fetch new content
+            window.location.reload(true);
+          });
+        });
+      }
+
+    }
+  }
+
+  // Function to fetch the latest version.json from the server
+  async function fetchLatestVersion() {
+    try {
+      const response = await fetch('/version.json', { cache: 'no-store' });
+      const data = await response.json();
+      return data.version;
+    } catch (error) {
+      console.error('Error fetching latest version:', error);
+      return null;
+    }
+  }
+
+  // Function to get the version cached by the service worker
+  async function getCachedVersion() {
+    try {
+      const cache = await caches.open(CACHE_NAME);
+      const cachedResponse = await cache.match('/version.json');
+      if (cachedResponse) {
+        const data = await cachedResponse.json();
+        return data.version;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching cached version:', error);
+      return null;
+    }
+  }
+
+  // Call this function periodically or on page load to check for updates
+  setInterval(checkForUpdate, 600000); // Check every 60 minute
+  // Delay the execution of checkForUpdate by 3 seconds after the page is loaded
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      checkForUpdate();
+    }, 3000); // 3000 milliseconds = 3 seconds
+  });
+
+//------------------------------------------------------------------------------
+
+
+
+
   </script>
 
 
