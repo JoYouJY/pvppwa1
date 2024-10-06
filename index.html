@@ -256,6 +256,8 @@ async function checkForUpdate() {
   try {
     const currentVersion = await getCachedVersion();
     const latestVersion = await fetchLatestVersion();
+    console.log('CURRENT version:',currentVersion);
+    console.log('LATEST version:',latestVersion);
 
     if (latestVersion && currentVersion && currentVersion !== latestVersion) {
       console.log('New version available:', latestVersion);
