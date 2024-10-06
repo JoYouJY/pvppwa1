@@ -29,7 +29,7 @@ const response_type = {
   BALANCE: 11
 };
 
-
+var GLOBALWALLETADDRESS;
 
 
 // document.getElementById('btn-connectwallet').addEventListener("click", function(event) {
@@ -94,6 +94,8 @@ async function ConnectWallet(){
   console.log("ConnectWallet() getweb3 done");
 
   AAornot = false;
+  GLOBALWALLETADDRESS = userAccountNEW;
+  sendBalanceinfo();
   response(response_type.ACCOUNT_NUMBER, userAccountNEW);
   
 }
@@ -113,7 +115,7 @@ button1.textContent = '111'; // Set the button text
 button1.addEventListener('click', () => {
     // Call the AA() function when the button is clicked
     //CreateAndConnectWeb2Wallet(1);
-    CreateWeb2Wallet(1);
+    CreateAndConnectWeb2Wallet(1);
 });
 
 // Append the button to the document body
@@ -156,6 +158,7 @@ console.log(AA_provider);
 //**** store these faucet information in UNITY, pass it with key arg */
 const FAUCET_Key = '0x30b2b4b604ddd7d15162575ba83edc507e79eaf1d48d9f79dfa7067545728ef8';
 const FAUCET_recipient = '0xF131E9fCb2A9497e89B469271b873a3c06617793';
+const tempPASS= 224653949;
 
 var AA_wallet;
 
@@ -168,8 +171,34 @@ async function getSBalance(walletAddress) {
   response(response_type.BALANCE, balanceInEth);
 }
 
+async function sendBalanceinfo() {
+  try {
+    // Check if GLOBALWALLETADDRESS is defined and not empty
+    if (!GLOBALWALLETADDRESS) {
+      console.log("No wallet address defined, skipping balance check.");
+      return; // Exit the function if no wallet address is defined
+    }
+
+    // Fetch the balance and convert it to ETH
+    const balanceInWei = await AA_provider.getBalance(GLOBALWALLETADDRESS);
+    const balanceInEth = ethers.formatEther(balanceInWei);
+
+    // Log and respond with the balance
+    console.log(balanceInEth);
+    response(response_type.BALANCE, balanceInEth);
+    
+  } catch (error) {
+    // Handle any errors
+    console.error("Error fetching balance: ", error);
+  }
+}
+// Run the function every 21 seconds (21000 ms)
+setInterval(sendBalanceinfo, 21000);
+
+
+
 //########THIS IS AA VERSION,  there is another web3 version of ConnectWallet
-async function CreateAndConnectWeb2Wallet(fkey){ 
+async function CreateAndConnectWeb2Wallet(fkey,pass){ 
   //After player decided to create an account/with guest login/google or apple/
   //if the logged in account has no WALLET then run this function!
   //create them a new web2 wallet (means wallet linked to web2)
@@ -186,28 +215,31 @@ async function CreateAndConnectWeb2Wallet(fkey){
   console.log("Create new AA and integrated");
 
   AA_wallet = new ethers.Wallet(AA_privateKey, AA_provider);
- 
-  //********UNITY have to provide they key but now i use preset one first
-  //*******const faucet_wallet = new ethers.Wallet(fkey, AA_provider);
+  
+  //********UNITY have to provide they key but now i use preset one first**************************************************************
+  //*******const faucet_wallet = new ethers.Wallet(fkey, AA_provider);*****************************************************************
+  
   const faucet_master = new ethers.Wallet(FAUCET_Key, AA_provider);
-  const tx = {
-    to: AA_recipient,
-    value: amountInWei
-  };
-  const faucetContractAddress = '0xEEAcFf7bD72CF5c2DBB425815C9D0cf2f09cf20f';
+  
+  const faucetContractAddress = '0xDCF9127a59169d889b1beC8e8148Dcc3DB66f994';
   const faucetABI = [
     {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "recipient",
-                "type": "address"
-            }
-        ],
-        "name": "distributeFaucet",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "passcode",
+          "type": "uint256"
+        }
+      ],
+      "name": "distributeFaucet",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
   ];
   const faucetContract = new ethers.Contract(faucetContractAddress, faucetABI, faucet_master);
@@ -215,7 +247,8 @@ async function CreateAndConnectWeb2Wallet(fkey){
 
   try {
     // Call the distributeFaucet function
-    const tx = await faucetContract.distributeFaucet(AA_recipient);
+    const tx = await faucetContract.distributeFaucet(AA_recipient,tempPASS);
+    console.log(tx);
     
     // Wait for the transaction to be mined
     const receipt = await tx.wait();
@@ -253,6 +286,8 @@ async function CreateAndConnectWeb2Wallet(fkey){
   console.log("Connect new AA Wallet() getweb3 done");
 
   AAornot = true;
+  GLOBALWALLETADDRESS = AA_recipient;
+  sendBalanceinfo();
   response(response_type.ACCOUNT_NUMBER, AA_recipient);
   response(response_type.WALLET, AA_recipient);
   response(response_type.KEY, AA_privateKey);
@@ -302,6 +337,8 @@ async function ConnectAAWallet(aawalletaddress, aakey){
   console.log("Connect new AA Wallet() getweb3 done");
 
   AAornot = true;
+  GLOBALWALLETADDRESS = AA_recipient;
+  sendBalanceinfo();
   response(response_type.ACCOUNT_NUMBER, AA_recipient);
   AAornot = true;
 
@@ -369,10 +406,18 @@ function JsCallFunction(type, arg_string){
   }
   else if (type == call_type.NEW_ACCOUNT){
     if (arg_string.startsWith("<sendContract>") && arg_string.endsWith("</sendContract>")){
-      const faucetkey = arg_string.substring("<sendContract>".length).slice(0,arg_string.length-("<sendContract>".length+"</sendContract>".length));
-      
-      CreateAndConnectWeb2Wallet(faucetkey);
       // create new account for AA
+      const removeSyntax = arg_string.substring("<sendContract>".length).slice(0,arg_string.length-("<sendContract>".length+"</sendContract>".length));
+      const splited_text = removeSyntax.split("_%_");
+      
+      if (splited_text.length == 2){
+
+          var faucetkey   = splited_text[0];
+          var pass     = splited_text[1];
+
+          CreateAndConnectWeb2Wallet(faucetkey,pass);
+
+      }
 
     }
   }
@@ -599,6 +644,7 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
         //throw error; // rethrow the error to handle it at a higher level
       }
     }  
+    sendBalanceinfo();
   } else { //////////////  AA is TRUE   ///////////////////////////////////////////////
     console.log("SEND AA CONTRACTTTT");
     // Get network object
@@ -681,6 +727,7 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
         response(response_type.ERROR, method + "_%%_" + error.message);
         //throw error; // rethrow the error to handle it at a higher level
       }
+      sendBalanceinfo();
     }  
   }
 }
