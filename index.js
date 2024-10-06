@@ -12,7 +12,8 @@ const MasterChainID = 64165; //250 is Fantom Mainnet, 64165
   FULL_SCREEN: 3,
   NEW_ACCOUNT: 4,
   CONNECT_AA: 5,
-  GET_BALANCE: 6
+  GET_BALANCE: 6,
+  TEST: 7
 };
 
 const response_type = {
