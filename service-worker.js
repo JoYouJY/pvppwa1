@@ -27,6 +27,7 @@ self.addEventListener('install', (event) => {
       return cache.addAll(urlsToCache.map(url => new Request(url, { credentials: 'same-origin' })));
     })
   );
+  self.skipWaiting(); // Skip waiting, activate immediately after install
 });
 
 // Activate the service worker and remove old caches
@@ -43,6 +44,9 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
+    }).then(() => {
+      // Claim clients to immediately take control of all open tabs
+      return self.clients.claim();
     })
   );
 });
@@ -74,4 +78,11 @@ self.addEventListener('fetch', (event) => {
       });
     })
   );
+});
+
+// Listen for messages to skip waiting and immediately activate new service worker
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting(); // Trigger skip waiting when message is received
+  }
 });

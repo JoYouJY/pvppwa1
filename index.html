@@ -27,20 +27,8 @@
     </style>
   <!--<body style="background-image: url('https://assets.zyrosite.com/mxBlyJk3v4f0qnxK/jojo-art-YX4XO87g1KtqLDE8.jpg');">--> 
     <!--body style="background-color: #000000d9;"></body-->
-    <body style="background-color: #121aad;"></body>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/service-worker.js')
-            .then(registration => {
-              console.log('Service Worker registered successfully:', registration.scope);
-            })
-            .catch(error => {
-              console.log('Service Worker registration failed:', error);
-            });
-        });
-      }
-    </script>
+    <body style="background-color: #dd1515;"></body>
+ 
 
 
     <script>
@@ -252,10 +240,11 @@
     }
   }
 //-----------------------------version checking-------------------------------------------------
+
 async function checkForUpdate() {
   try {
     const currentVersion = await getCachedVersion(); // Get the version from the cache
-    const latestVersion = await fetchLatestVersion(); // Fetch the latest version from server
+    const latestVersion = await fetchLatestVersion(); // Fetch the latest version from the server
 
     console.log('CURRENT version:', currentVersion);
     console.log('LATEST version:', latestVersion);
@@ -264,24 +253,27 @@ async function checkForUpdate() {
     if (latestVersion && currentVersion && currentVersion !== latestVersion) {
       console.log('New version available:', latestVersion);
 
-      // Proceed to clear caches and force reload
+      // Unregister all service workers
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for (let registration of registrations) {
-            registration.unregister(); // Unregister old service worker
-          }
-        }).then(() => {
-          // Clear all caches
-          caches.keys().then((cacheNames) => {
-            cacheNames.forEach((cacheName) => {
-              caches.delete(cacheName); // Delete each cache
-            });
-          }).then(() => {
-            // Reload page to fetch new content and rebuild cache
-            window.location.reload(true);
-          });
-        });
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (let registration of registrations) {
+          console.log('Unregistering service worker:', registration);
+          await registration.unregister(); // Unregister old service worker
+        }
       }
+
+      // Clear all caches
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames.map((cacheName) => {
+          console.log('Deleting cache:', cacheName);
+          return caches.delete(cacheName); // Delete each cache
+        })
+      );
+
+      // Reload page to register the new service worker and fetch fresh content
+      console.log('Reloading page to apply new version...');
+      window.location.reload(true);
     }
   } catch (error) {
     console.error('Error during version check:', error);
@@ -335,11 +327,19 @@ async function checkForUpdate() {
     }, 5000); // 3000 milliseconds = 3 seconds
   });
 
-//------------------------------------------------------------------------------
-
-
-
-
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(registration => {
+          console.log('Service Worker registered successfully:', registration.scope);
+        })
+        .catch(error => {
+          console.log('Service Worker registration failed:', error);
+        });
+    });
+  }
+//----------------------------------------------------------------------
+     
   </script>
 
 
