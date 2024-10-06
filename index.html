@@ -27,7 +27,7 @@
     </style>
   <!--<body style="background-image: url('https://assets.zyrosite.com/mxBlyJk3v4f0qnxK/jojo-art-YX4XO87g1KtqLDE8.jpg');">--> 
     <!--body style="background-color: #000000d9;"></body-->
-    <body style="background-color: #1031a8;"></body>
+    <body style="background-color: #a942e8;"></body>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -306,6 +306,7 @@ async function checkForUpdate() {
   async function getCachedVersion() {
     try {
       const cache = await caches.open(CACHE_NAME);
+      console.log('CACHE NAME:',CACHE_NAME);
       const cachedResponse = await cache.match('/version.json');
       if (cachedResponse) {
         const data = await cachedResponse.json();
