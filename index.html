@@ -27,7 +27,7 @@
     </style>
   <!--<body style="background-image: url('https://assets.zyrosite.com/mxBlyJk3v4f0qnxK/jojo-art-YX4XO87g1KtqLDE8.jpg');">--> 
     <!--body style="background-color: #000000d9;"></body-->
-    <body style="background-color: #a942e8;"></body>
+    <body style="background-color: #440868;"></body>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -303,21 +303,26 @@ async function checkForUpdate() {
   }
 
   // Function to get the version cached by the service worker
+
   async function getCachedVersion() {
-    try {
-      const cache = await caches.open(CACHE_NAME);
-      console.log('CACHE NAME:',CACHE_NAME);
-      const cachedResponse = await cache.match('/version.json');
-      if (cachedResponse) {
-        const data = await cachedResponse.json();
-        return data.version;
-      }
-      return null;
-    } catch (error) {
-      console.error('Error fetching cached version:', error);
+  try {
+    const cache = await caches.open(CACHE_NAME); // Open the cache
+    console.log('CACHE NAME:',CACHE_NAME);
+    const cachedResponse = await cache.match('/version.json'); // Look for version.json in cache
+
+    if (cachedResponse) {
+      const data = await cachedResponse.json();
+      console.log('Cached version.json data:', data); // Log the content of version.json
+      return data.version; // Return the version key
+    } else {
+      console.warn('version.json not found in cache'); // Warn if not found in cache
       return null;
     }
+  } catch (error) {
+    console.error('Error fetching cached version:', error);
+    return null;
   }
+}
 
   // Call this function periodically or on page load to check for updates
   setInterval(checkForUpdate, 600000); // Check every 60 minute
