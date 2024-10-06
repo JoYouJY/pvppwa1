@@ -306,6 +306,8 @@ async function checkForUpdate() {
 
   async function getCachedVersion() {
   try {
+    const CACHE_NAME = 'fa-rpg-cache-v1'; // Ensure the same cache name is used here too!
+
     const cache = await caches.open(CACHE_NAME); // Open the cache
     console.log('CACHE NAME:',CACHE_NAME);
     const cachedResponse = await cache.match('/version.json'); // Look for version.json in cache
