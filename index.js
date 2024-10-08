@@ -1,4 +1,4 @@
-console.log("start");
+
 
 var providerNEW;
 var signerNEW;
@@ -13,7 +13,7 @@ const MasterChainID = 64165; //250 is Fantom Mainnet, 64165
   NEW_ACCOUNT: 4,
   CONNECT_AA: 5,
   GET_BALANCE: 6,
-  TEST: 7
+  INSTALL_PROMPT: 7
 };
 
 const response_type = {
@@ -27,7 +27,8 @@ const response_type = {
   WALLET: 8,
   KEY: 9,
   RECOVERY: 10,
-  BALANCE: 11
+  BALANCE: 11,
+  AA_CONNECTED: 12
 };
 
 var GLOBALWALLETADDRESS;
@@ -41,7 +42,7 @@ var GLOBALWALLETADDRESS;
 // const from = await web3.eth.getAccounts();
 /* ORIGINAL CONNECT WALLET WEB3*/ 
 async function ConnectWallet(){
-  console.log("ConnectWallet()");
+  
 
   if (window.ethereum == null) {
 
@@ -49,7 +50,7 @@ async function ConnectWallet(){
     // which is backed by a variety of third-party services (such
     // as INFURA). They do not have private keys installed so are
     // only have read-only access
-    console.log("MetaMask not installed; using read-only defaults")
+    
     //provider = ethers.getDefaultProvider()
     //providerNEW = new ethers.JsonRpcProvider('https://rpcapi.sonic.fantom.network/');
 
@@ -59,12 +60,12 @@ async function ConnectWallet(){
     // protocol that allows Ethers access to make all read-only
     // requests through MetaMask.
     providerNEW = new ethers.BrowserProvider(window.ethereum)
-    console.log(window.ethereum);
+    
     const network = await providerNEW.getNetwork();
     var chainId = network.chainId;
     // Convert chainId to a number before comparison
     chainId = parseInt(chainId, 10);
-    console.log("Chain ID:", chainId);
+    
 
     // Check if chain ID is not 250
     if (chainId !== MasterChainID) {
@@ -84,15 +85,15 @@ async function ConnectWallet(){
     if (error.code === 4001) {
       window.location.href = 'ethereum:';
     } else {
-      console.log(error);
+      
     }
   }
 
   userAccountNEW = await signerNEW.getAddress();
 
-  console.log(userAccountNEW);
+  
 
-  console.log("ConnectWallet() getweb3 done");
+  
 
   AAornot = false;
   GLOBALWALLETADDRESS = userAccountNEW;
@@ -109,18 +110,6 @@ async function ConnectWallet(){
 
 //################################### AA ####################################
 /**/
-const button1 = document.createElement('button');
-button1.textContent = '111'; // Set the button text
-
-// Add an event listener to the button
-button1.addEventListener('click', () => {
-    // Call the AA() function when the button is clicked
-    //CreateAndConnectWeb2Wallet(1);
-    CreateAndConnectWeb2Wallet(1);
-});
-
-// Append the button to the document body
-document.body.appendChild(button1);
 
 
 /**/
@@ -128,9 +117,9 @@ function CreateWeb2Wallet(){
   const wallet = ethers.Wallet.createRandom();
   AA_privateKey = wallet.privateKey;
   AA_recipient = wallet.address;
-  console.log("Address:", wallet.address);
-  console.log("Private Key:", wallet.privateKey);
-  console.log("Mnemonic:", wallet.mnemonic.phrase);
+  
+  
+  
 }
 
 
@@ -143,7 +132,7 @@ const AA_provider = new ethers.JsonRpcProvider(AA_rpcUrl, {
   name: 'soniclabs-testnet',
   chainId: AA_chainId,
 });
-console.log(AA_provider);
+
 // Step 3: Create or restore a wallet
 // If you want to create a new wallet, uncomment the following line
 // const AA_wallet = ethers.Wallet.createRandom();
@@ -157,9 +146,7 @@ console.log(AA_provider);
 
 //MASTER CONTRACT --- use this and will create several new one to rotate
 //**** store these faucet information in UNITY, pass it with key arg */
-const FAUCET_Key = '0x30b2b4b604ddd7d15162575ba83edc507e79eaf1d48d9f79dfa7067545728ef8';
-const FAUCET_recipient = '0xF131E9fCb2A9497e89B469271b873a3c06617793';
-const tempPASS= 224653949;
+
 
 var AA_wallet;
 
@@ -167,7 +154,7 @@ var AA_wallet;
 async function getSBalance(walletAddress) {
   const balanceInWei = await AA_provider.getBalance(walletAddress);
   const balanceInEth = ethers.formatEther(balanceInWei);
-  console.log(balanceInEth);
+  
   
   response(response_type.BALANCE, balanceInEth);
 }
@@ -176,7 +163,7 @@ async function sendBalanceinfo() {
   try {
     // Check if GLOBALWALLETADDRESS is defined and not empty
     if (!GLOBALWALLETADDRESS) {
-      console.log("No wallet address defined, skipping balance check.");
+      
       return; // Exit the function if no wallet address is defined
     }
 
@@ -185,7 +172,7 @@ async function sendBalanceinfo() {
     const balanceInEth = ethers.formatEther(balanceInWei);
 
     // Log and respond with the balance
-    console.log(balanceInEth);
+    
     response(response_type.BALANCE, balanceInEth);
     
   } catch (error) {
@@ -210,17 +197,17 @@ async function CreateAndConnectWeb2Wallet(fkey,pass){
   const wallet = ethers.Wallet.createRandom();
   var AA_privateKey = wallet.privateKey;
   var AA_recipient = wallet.address;
-  console.log("Address:", wallet.address);
-  console.log("Private Key:", wallet.privateKey);
-  console.log("Mnemonic:", wallet.mnemonic.phrase);
-  console.log("Create new AA and integrated");
+  
+  
+  
+  
 
   AA_wallet = new ethers.Wallet(AA_privateKey, AA_provider);
   
   //********UNITY have to provide they key but now i use preset one first**************************************************************
   //*******const faucet_wallet = new ethers.Wallet(fkey, AA_provider);*****************************************************************
   
-  const faucet_master = new ethers.Wallet(FAUCET_Key, AA_provider);
+  const faucet_master = new ethers.Wallet(fkey, AA_provider);
   
   const faucetContractAddress = '0xDCF9127a59169d889b1beC8e8148Dcc3DB66f994';
   const faucetABI = [
@@ -248,26 +235,26 @@ async function CreateAndConnectWeb2Wallet(fkey,pass){
 
   try {
     // Call the distributeFaucet function
-    const tx = await faucetContract.distributeFaucet(AA_recipient,tempPASS);
-    console.log(tx);
+    const tx = await faucetContract.distributeFaucet(AA_recipient,pass);
+    
     
     // Wait for the transaction to be mined
     const receipt = await tx.wait();
     
-    console.log('Faucet distribution successful!');
-    console.log('Transaction hash:', receipt.transactionHash);
-    console.log('Gas used:', receipt.gasUsed.toString());
+    
+    
+    
   } catch (error) {
       console.error('Error distributing faucet:', error.message);
   }
 
-    console.log(AA_provider);
+    
     const network = await AA_provider.getNetwork();
-    console.log("network:", network);
+    
     var chainId = network.chainId;
     // Convert chainId to a number before comparison
     chainId = parseInt(chainId, 10);
-    console.log("Chain ID:", chainId);
+    
 
     // Check if chain ID is not 250
     if (chainId !== MasterChainID) {
@@ -282,14 +269,14 @@ async function CreateAndConnectWeb2Wallet(fkey,pass){
    // signerNEW = await providerNEW.getSigner();
  
 
-  console.log(AA_recipient);
+  
 
-  console.log("Connect new AA Wallet() getweb3 done");
+  
 
   AAornot = true;
   GLOBALWALLETADDRESS = AA_recipient;
   sendBalanceinfo();
-  response(response_type.ACCOUNT_NUMBER, AA_recipient);
+  //response(response_type.ACCOUNT_NUMBER, AA_recipient);
   response(response_type.WALLET, AA_recipient);
   response(response_type.KEY, AA_privateKey);
   response(response_type.RECOVERY, wallet.mnemonic.phrase);
@@ -305,20 +292,20 @@ async function ConnectAAWallet(aawalletaddress, aakey){
   //Create a wallet for web3 account after they register web2
   var AA_privateKey = aakey;
   var AA_recipient = aawalletaddress;
-  console.log("Address:", AA_recipient);
-  //console.log("Private Key:", wallet.privateKey);
-  //console.log("Mnemonic:", wallet.mnemonic.phrase);
-  console.log("ConnectAAWallet() AA integrated");
+  
+  //
+  //
+  
 
   AA_wallet = new ethers.Wallet(AA_privateKey, AA_provider);
  
-  console.log(AA_provider);
+  
   const network = await AA_provider.getNetwork();
-  console.log("network:", network);
+  
   var chainId = network.chainId;
   // Convert chainId to a number before comparison
   chainId = parseInt(chainId, 10);
-  console.log("Chain ID:", chainId);
+  
 
   // Check if chain ID is not 250
   if (chainId !== MasterChainID) {
@@ -333,14 +320,14 @@ async function ConnectAAWallet(aawalletaddress, aakey){
    // signerNEW = await providerNEW.getSigner();
  
 
-  console.log(AA_recipient);
+  
 
-  console.log("Connect new AA Wallet() getweb3 done");
+  
 
   AAornot = true;
   GLOBALWALLETADDRESS = AA_recipient;
   sendBalanceinfo();
-  response(response_type.ACCOUNT_NUMBER, AA_recipient);
+  response(response_type.AA_CONNECTED, AA_recipient);
   AAornot = true;
 
 }
@@ -348,9 +335,6 @@ async function ConnectAAWallet(aawalletaddress, aakey){
 
 
 //################################ AA END  #################################
-
-import("./reroute.js")
-// walkaround();
 
 
 var isfullscreen = false;
@@ -368,9 +352,9 @@ function EnterFullScreen(){
 // ConnectWallet();
 
 function JsCallFunction(type, arg_string){
-  console.log("JsCallFunction")
-  console.log(type)
-  console.log(arg_string)
+  
+  
+  
 
 
   if(type == call_type.CONNECT){    
@@ -448,6 +432,11 @@ function JsCallFunction(type, arg_string){
 
     }
   }
+  else if (type == call_type.INSTALL_PROMPT){
+    
+      hideCanvasAndShowPrompt();
+      //install prompt
+  }
 
 
 }
@@ -456,9 +445,9 @@ window.JsCallFunction = JsCallFunction;
 
 
 async function JsGetFunction(type, arg_string){
-  console.log("JsGetFunction")
-  console.log(type)
-  // console.log(arg_string)
+  
+  
+  // 
 
 
   arg_string = arg_string.toString()
@@ -474,18 +463,18 @@ async function JsGetFunction(type, arg_string){
       var args        = splited_text[3];
       var abi         = splited_text[4];
 
-      console.log(bridge_id);
-      console.log(address);
-      console.log(method);
-      console.log(args);
-      // console.log(abi);
+      
+      
+      
+      
+      // 
 
 
 
       var responseString = await readContract(bridge_id, method, abi, address, args, ) 
 
       
-      console.log(JSON.stringify(responseString));
+      
 
       response(response_type.READ_RESPONSE, bridge_id.toString() + "_%_" + JSON.stringify(responseString))
 
@@ -505,10 +494,10 @@ async function readContract(id, method, abi, contract, args) {
   return new Promise(async (resolve, reject) => {
     try {
       const from = (await web3.eth.getAccounts())[0];
-      console.log("readContract");
-      console.log(method);
+      
+      
       const result = await new web3.eth.Contract(JSON.parse(abi), contract).methods[method](...JSON.parse(args)).call();
-      console.log(result);
+      
       resolve(result); // Resolve the Promise with the result
     } catch (error) {
       console.error(error);
@@ -523,9 +512,9 @@ async function readContract(id, method, abi, contract, args) {
   return new Promise(async (resolve, reject) => {
     try {
       //const from = (await web3.eth.getAccounts())[0];
-      console.log("readContract");
-      console.log(method);
-      console.log(contract);
+      
+      
+      
       const contracts = new ethers.Contract(contract, abi, providerNEW);
       const resulttemp = await contracts[method](...JSON.parse(args));
       //const result = resulttemp.map(value => value.toString());
@@ -539,18 +528,18 @@ async function readContract(id, method, abi, contract, args) {
       
       //const result = recursivelyConvertToString(resulttemp);
       //CHOOSE ONE to USE. the rest obsolate to reduce redundant.
-      console.log(resulttemp);
+      
       
 
       const unwraplog = unwrapProxy(resulttemp);
-      console.log("Unwrapped proxy: ",unwraplog);
+      
 
       
       const serializelog = convertBigIntsToStrings(unwraplog);
-      console.log("serialize log: ",serializelog);
+      
     
       
-      console.log(serializelog);
+      
       //-------------------------
       resolve(serializelog); // Resolve the Promise with the result
     } catch (error) {
@@ -563,14 +552,14 @@ async function readContract(id, method, abi, contract, args) {
 async function sendContract(id, method, abi, contract, args, value, gasLimit, gasPrice) { //conventional web3 wallet send
   //////////////// NO AA //////////////////////////////////////////////////////////////
   if (AAornot == false) {
-    console.log("SEND CONTRACTTTT");
+    
     // Get network object
     providerNEW = new ethers.BrowserProvider(window.ethereum);
     const network = await providerNEW.getNetwork();
     var chainId = network.chainId;
     // Convert chainId to a number before comparison
     chainId = parseInt(chainId, 10);
-    console.log("Chain ID:", chainId);
+    
 
     // Check if chain ID is not 250
     if (chainId !== MasterChainID) {
@@ -586,34 +575,34 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
       if (gasPrice != "") { options.gasPrice = gasPrice; }
       if (value    != "") { options.value    = value; }
 
-      console.log("waiting metamask");
       
-      //console.log(from)
-      console.log(id)
-      console.log(contract)
-      console.log(method)
-      console.log(args)
-      console.log(options);
-      console.log(value)
-      console.log(gasLimit)
-      console.log(gasPrice)
+      
+      //
+      
+      
+      
+      
+      
+      
+      
+      
       
       try {
-        console.log("HERE123");
-        console.log(...JSON.parse(args));
+        
+        
         const transaction = await contractWithSigner[method](...JSON.parse(args), options);
-        console.log("HERE321");
+        
         const startTime = new Date();
         // Wait for the transaction to be mined and get receipt
-        console.log(transaction.hash);
+        
         response(response_type.HASH, method);
         const receipt = await getTransactionReceiptWithRetry(transaction.hash, 120);
-        console.log("USE OTHER METHOD",receipt )
+        
         const endTime2 = new Date();
         const timeTaken2 = endTime2 - startTime;
-        console.log('First Time taken (ms):', timeTaken2);
+        
         //----------------------------------------
-        console.log('log', receipt.logs);
+        
         const parsedLogs = [];
         for (const log of receipt.logs) {
           const parsedLog = contracts.interface.parseLog(log);
@@ -624,19 +613,19 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
             parsedLogs.push(log);
           }
         }
-        console.log("this is parsed log: ", parsedLogs);
+        
         // Now parsedLogs contains the parsed logs and raw logs if they didn't match the ABI
         
 
         const unwraplog = unwrapProxy(parsedLogs);
-        console.log("Unwrapped proxy: ",unwraplog);
+        
 
         
         const serializelog = convertBigIntsToStrings(unwraplog);
-        console.log("serialize log: ",serializelog);
+        
 
         const jsonlog = JSON.stringify(serializelog);
-        console.log("This is JSONstringfy: ",jsonlog);
+        
         response(response_type.RECEIPT, method + "_%%_" + JSON.stringify(serializelog));
         return receipt;
       } catch (error) {
@@ -647,14 +636,14 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
     }  
     sendBalanceinfo();
   } else { //////////////  AA is TRUE   ///////////////////////////////////////////////
-    console.log("SEND AA CONTRACTTTT");
+    
     // Get network object
     providerNEW = AA_provider ;
     const network = await providerNEW.getNetwork();
     var chainId = network.chainId;
     // Convert chainId to a number before comparison
     chainId = parseInt(chainId, 10);
-    console.log("Chain ID:", chainId);
+    
 
     // Check if chain ID is not 250
     if (chainId !== MasterChainID) {
@@ -670,34 +659,34 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
       if (gasPrice != "") { options.gasPrice = gasPrice; }
       if (value    != "") { options.value    = value; }
 
-      console.log("waiting metamask");
       
-      //console.log(from)
-      console.log(id)
-      console.log(contract)
-      console.log(method)
-      console.log(args)
-      console.log(options);
-      console.log(value)
-      console.log(gasLimit)
-      console.log(gasPrice)
+      
+      //
+      
+      
+      
+      
+      
+      
+      
+      
       
       try {
-        console.log("HERE123");
-        console.log(...JSON.parse(args));
+        
+        
         const transaction = await contractWithSigner[method](...JSON.parse(args), options);
-        console.log("HERE321");
+        
         const startTime = new Date();
         // Wait for the transaction to be mined and get receipt
-        console.log(transaction.hash);
+        
         response(response_type.HASH, method);
         const receipt = await getTransactionReceiptWithRetry(transaction.hash, 120);
-        console.log("USE OTHER METHOD",receipt )
+        
         const endTime2 = new Date();
         const timeTaken2 = endTime2 - startTime;
-        console.log('First Time taken (ms):', timeTaken2);
+        
         //----------------------------------------
-        console.log('log', receipt.logs);
+        
         const parsedLogs = [];
         for (const log of receipt.logs) {
           const parsedLog = contracts.interface.parseLog(log);
@@ -708,19 +697,19 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
             parsedLogs.push(log);
           }
         }
-        console.log("this is parsed log: ", parsedLogs);
+        
         // Now parsedLogs contains the parsed logs and raw logs if they didn't match the ABI
         
 
         const unwraplog = unwrapProxy(parsedLogs);
-        console.log("Unwrapped proxy: ",unwraplog);
+        
 
         
         const serializelog = convertBigIntsToStrings(unwraplog);
-        console.log("serialize log: ",serializelog);
+        
 
         const jsonlog = JSON.stringify(serializelog);
-        console.log("This is JSONstringfy: ",jsonlog);
+        
         response(response_type.RECEIPT, method + "_%%_" + JSON.stringify(serializelog));
         return receipt;
       } catch (error) {
@@ -734,14 +723,14 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
 }
 //############## AA SEND CONTRACT ###################
 async function sendContractAA(id, method, abi, contract, args, value, gasLimit, gasPrice) { //for going with AA way, call this instead.
-  console.log("SEND AA CONTRACTTTT");
+  
   // Get network object
   providerNEW = AA_provider ;
   const network = await providerNEW.getNetwork();
   var chainId = network.chainId;
   // Convert chainId to a number before comparison
   chainId = parseInt(chainId, 10);
-  console.log("Chain ID:", chainId);
+  
 
   // Check if chain ID is not 250
   if (chainId !== MasterChainID) {
@@ -757,34 +746,34 @@ async function sendContractAA(id, method, abi, contract, args, value, gasLimit, 
     if (gasPrice != "") { options.gasPrice = gasPrice; }
     if (value    != "") { options.value    = value; }
 
-    console.log("waiting metamask");
     
-    //console.log(from)
-    console.log(id)
-    console.log(contract)
-    console.log(method)
-    console.log(args)
-    console.log(options);
-    console.log(value)
-    console.log(gasLimit)
-    console.log(gasPrice)
+    
+    //
+    
+    
+    
+    
+    
+    
+    
+    
     
     try {
-      console.log("HERE123");
-      console.log(...JSON.parse(args));
+      
+      
       const transaction = await contractWithSigner[method](...JSON.parse(args), options);
-      console.log("HERE321");
+      
       const startTime = new Date();
       // Wait for the transaction to be mined and get receipt
-      console.log(transaction.hash);
+      
       response(response_type.HASH, method);
       const receipt = await getTransactionReceiptWithRetry(transaction.hash, 120);
-      console.log("USE OTHER METHOD",receipt )
+      
       const endTime2 = new Date();
       const timeTaken2 = endTime2 - startTime;
-      console.log('First Time taken (ms):', timeTaken2);
+      
       //----------------------------------------
-      console.log('log', receipt.logs);
+      
       const parsedLogs = [];
       for (const log of receipt.logs) {
         const parsedLog = contracts.interface.parseLog(log);
@@ -795,19 +784,19 @@ async function sendContractAA(id, method, abi, contract, args, value, gasLimit, 
           parsedLogs.push(log);
         }
       }
-      console.log("this is parsed log: ", parsedLogs);
+      
       // Now parsedLogs contains the parsed logs and raw logs if they didn't match the ABI
       
 
       const unwraplog = unwrapProxy(parsedLogs);
-      console.log("Unwrapped proxy: ",unwraplog);
+      
 
       
       const serializelog = convertBigIntsToStrings(unwraplog);
-      console.log("serialize log: ",serializelog);
+      
 
       const jsonlog = JSON.stringify(serializelog);
-      console.log("This is JSONstringfy: ",jsonlog);
+      
       response(response_type.RECEIPT, method + "_%%_" + JSON.stringify(serializelog));
       return receipt;
     } catch (error) {
@@ -833,7 +822,7 @@ async function getTransactionReceiptWithRetry(txHash, maxRetries) {
     txReceipt = await providerNEW.getTransactionReceipt(txHash);
 
     if (txReceipt) {
-      console.log("retried: " ,retries, " times.")
+      
       return txReceipt;
     }
 
@@ -914,7 +903,7 @@ window.getAggressiveGasPrice = async function() {
     // Convert the gas price to Gwei or other units if desired
     const aggressiveGasPriceGwei = web3.utils.fromWei(aggressiveGasPrice.toString(), 'gwei');
 
-    console.log('Aggressive gas price:', aggressiveGasPriceGwei, 'Gwei');
+    
     window.unityInstance.SendMessage("Web3Manager", "UpdateGasPrice", aggressiveGasPrice.toString());
     return aggressiveGasPrice.toString(); // Return the aggressive gas price
     */
@@ -923,13 +912,13 @@ window.getAggressiveGasPrice = async function() {
 		//const contractWithSigner = contract.connect(signerNEW);
     //const startTime3 = new Date();
       //const gasEstimate = await contractWithSigner.BattlePet.estimateGas('0', '3');
-      //console.log("Gaslimit estimate", gasEstimate.toString());
+      //
       // Get current gas price
       
       const feeData = await providerNEW.getFeeData();
       const bignumgas = feeData.gasPrice * BigInt(15) / BigInt(10);
       //const gasPrice = numbergas.toString();
-      console.log("GasPrice estimate", bignumgas);
+      
 
       return bignumgas;
 
@@ -988,14 +977,14 @@ const rotateButton = document.getElementById("unity-rotate-button");
 rotateButton.addEventListener("click", function() {
   // Call the rotateCanvas function here
   rotateCanvas();
-  console.log("Rotated"); // Optional for debugging
+   // Optional for debugging
 });
 
 var isHorizontal = true;
 function rotateCanvas() {
-  console.log("resize");
+  
   isHorizontal = ! isHorizontal;
-  console.log(isHorizontal);
+  
   var canvas = document.getElementById('unity-canvas');
   var temp = canvas.style.width;
   canvas.style.width = canvas.style.height;
@@ -1003,3 +992,58 @@ function rotateCanvas() {
   
   response(response_type.ROTATE, isHorizontal);
 }
+
+//---------------Install Prompt -------------------------
+/*window.addEventListener('load', () => {
+  setTimeout(() => {
+    
+    hideCanvasAndShowPrompt(); // Call the function to show the install prompt
+  }, 5000); // 5000 milliseconds = 5 seconds
+});
+*/
+
+
+// Function to hide the canvas and show the modal with install prompt
+function hideCanvasAndShowPrompt() {
+  //const canvas = document.getElementById('yourCanvasId'); // Replace with your canvas ID
+  canvas.style.display = 'block'; // Hide the canvas
+
+  // Create a modal div
+  const modal = document.createElement('div');
+  modal.style.position = 'fixed';
+  modal.style.top = '50%';
+  modal.style.left = '50%';
+  modal.style.transform = 'translate(-50%, -50%)';
+  modal.style.padding = '20px';
+  modal.style.backgroundColor = '#fff';
+  modal.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
+  modal.style.zIndex = '1000';
+
+  // Create text message
+  const message = document.createElement('p');
+  message.innerText = 'Do you want to install the Fate Adventure WebAPP?';
+  modal.appendChild(message);
+
+  // Create Yes button
+  const yesButton = document.createElement('button');
+  yesButton.innerText = 'Yes';
+  yesButton.onclick = () => {
+      // Call the install prompt function here
+      showInstallPrompt();
+      document.body.removeChild(modal); // Remove the modal
+  };
+  modal.appendChild(yesButton);
+
+  // Create No button
+  const noButton = document.createElement('button');
+  noButton.innerText = 'No';
+  noButton.onclick = () => {
+      document.body.removeChild(modal); // Remove the modal
+      canvas.style.display = 'block';
+  };
+  modal.appendChild(noButton);
+
+  // Append the modal to the body
+  document.body.appendChild(modal);
+}
+

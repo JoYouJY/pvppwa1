@@ -109,39 +109,63 @@
     </script>
     <script  src="./index.js"></script> 
     <script>
-      var container = document.querySelector("#unity-container");
-      var canvas = document.querySelector("#unity-canvas");
-      var loadingBar = document.querySelector("#unity-loading-bar");
-      var progressBarFull = document.querySelector("#unity-progress-bar-full");
-      //var fullscreenButton = document.querySelector("#unity-fullscreen-button");
-      var warningBanner = document.querySelector("#unity-warning");
-      // Shows a temporary message banner/ribbon for a few seconds, or
-      // a permanent error message on top of the canvas if type=='error'.
-      // If type=='warning', a yellow highlight color is used.
-      // Modify or remove this function to customize the visually presented
-      // way that non-critical warnings and error messages are presented to the
-      // user.
+      const isMobile = /iPhone|iPod/i.test(navigator.userAgent);
 
-      function unityShowBanner(msg, type) {
-        function updateBannerVisibility() {
-          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+      if (isMobile) {
+          // Create a div element for the unsupported message
+          const messageDiv = document.createElement('div');
+          
+          // Set the message text
+          messageDiv.innerText = 'Supporting Android and Windows now, iPhone coming soon.';
+          
+          // Style the message (optional)
+          messageDiv.style.position = 'fixed';
+          messageDiv.style.top = '50%';
+          messageDiv.style.left = '50%';
+          messageDiv.style.transform = 'translate(-50%, -50%)';
+          messageDiv.style.padding = '20px';
+          messageDiv.style.backgroundColor = '#FFFFFF'; // Red background
+          messageDiv.style.color = '#fff'; // White text
+          messageDiv.style.zIndex = '1000';
+          messageDiv.style.borderRadius = '5px';
+          messageDiv.style.textAlign = 'center';
+
+          // Append the message to the body
+          document.body.appendChild(messageDiv);
+        } else {
+        var container = document.querySelector("#unity-container");
+        var canvas = document.querySelector("#unity-canvas");
+        var loadingBar = document.querySelector("#unity-loading-bar");
+        var progressBarFull = document.querySelector("#unity-progress-bar-full");
+        //var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+        var warningBanner = document.querySelector("#unity-warning");
+        // Shows a temporary message banner/ribbon for a few seconds, or
+        // a permanent error message on top of the canvas if type=='error'.
+        // If type=='warning', a yellow highlight color is used.
+        // Modify or remove this function to customize the visually presented
+        // way that non-critical warnings and error messages are presented to the
+        // user.
+
+        function unityShowBanner(msg, type) {
+          function updateBannerVisibility() {
+            warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+          }
+          var div = document.createElement('div');
+          div.innerHTML = msg;
+          warningBanner.appendChild(div);
+          if (type == 'error') div.style = 'background: red; padding: 10px;';
+          else {
+            if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+            setTimeout(function() {
+              warningBanner.removeChild(div);
+              updateBannerVisibility();
+            }, 5000);
+          }
+          updateBannerVisibility();
         }
-        var div = document.createElement('div');
-        div.innerHTML = msg;
-        warningBanner.appendChild(div);
-        if (type == 'error') div.style = 'background: red; padding: 10px;';
-        else {
-          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-          setTimeout(function() {
-            warningBanner.removeChild(div);
-            updateBannerVisibility();
-          }, 5000);
-        }
-        updateBannerVisibility();
-      }
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/Build.loader.js";
-      var config = {
+        var buildUrl = "Build";
+        var loaderUrl = buildUrl + "/Build.loader.js";
+        var config = {
         dataUrl: buildUrl + "/Build.data",
         frameworkUrl: buildUrl + "/Build.framework.js",
         codeUrl: buildUrl + "/Build.wasm",
@@ -151,45 +175,46 @@
         productVersion: "1.0.0",
         showBanner: unityShowBanner,
       };
-      // By default Unity keeps WebGL canvas render target size matched with
-      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-      // Set this to false if you want to decouple this synchronization from
-      // happening inside the engine, and you would instead like to size up
-      // the canvas DOM size and WebGL render target sizes yourself.
-      // config.matchWebGLToCanvasSize = false;
-      /*      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-              container.className = "unity-mobile";
-              // Avoid draining fillrate performance on mobile devices,
-              // and default/override low DPI mode on mobile browsers.
-              config.devicePixelRatio = 1;
-              unityShowBanner('WebGL builds are not supported on mobile devices.');
-            } else {
-              canvas.style.width = "1280px";
-              canvas.style.height = "720px";
-            }
-      */
-      loadingBar.style.display = "block";
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          progressBarFull.style.width = 100 * progress + "%";
-          }).then((unityInstance) => {
-            window.unityInstance = unityInstance;
-            loadingBar.style.display = "none";
-            setTimeout(switchToFantom, 3127);
-            console.log("poppop1");
-            //showInstallPrompt(); // Add this line to show the install prompt
-            console.log("poppop2");
-          }).catch((message) => {
-            alert(message);
-          });
-      };
-      document.body.appendChild(script);
+        // By default Unity keeps WebGL canvas render target size matched with
+        // the DOM size of the canvas element (scaled by window.devicePixelRatio)
+        // Set this to false if you want to decouple this synchronization from
+        // happening inside the engine, and you would instead like to size up
+        // the canvas DOM size and WebGL render target sizes yourself.
+        // config.matchWebGLToCanvasSize = false;
+        /*      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                container.className = "unity-mobile";
+                // Avoid draining fillrate performance on mobile devices,
+                // and default/override low DPI mode on mobile browsers.
+                config.devicePixelRatio = 1;
+                unityShowBanner('WebGL builds are not supported on mobile devices.');
+              } else {
+                canvas.style.width = "1280px";
+                canvas.style.height = "720px";
+              }
+        */
+        loadingBar.style.display = "block";
+        var script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+          createUnityInstance(canvas, config, (progress) => {
+            progressBarFull.style.width = 100 * progress + "%";
+            }).then((unityInstance) => {
+              window.unityInstance = unityInstance;
+              loadingBar.style.display = "none";
+              setTimeout(switchToFantom, 3127);
+              
+              //showInstallPrompt(); // Add this line to show the install prompt
+              
+            }).catch((message) => {
+              alert(message);
+            });
+        };
+        document.body.appendChild(script);
+        }
     </script>
 
     <script>
-      console.log('gashere');
+      
       // Connect to the Web3 provider
       //const web3 = new Web3('https://rpc.ankr.com/fantom');
       //const web3 = new Web3('https://rpcapi.sonic.fantom.network/');
@@ -207,7 +232,7 @@
         const aggressiveGasPrice = gasPriceBigInt * BigInt(15) / BigInt(10); // Multiplies by 1.5 as an example
         // Convert the gas price to Gwei or other units if desired
         const aggressiveGasPriceGwei = web3.utils.fromWei(aggressiveGasPrice.toString(), 'gwei');
-        console.log('Aggressive gas price:', aggressiveGasPriceGwei, 'Gwei');
+        
         window.unityInstance.SendMessage("Web3Manager", "UpdateGasPrice", aggressiveGasPrice.toString());
         return aggressiveGasPrice.toString(); // Return the aggressive gas price
       } catch (error) {
@@ -216,7 +241,7 @@
       }
     };
     let zzz = window.getAggressiveGasPrice();
-    console.log('zzzAggressive gas price:', zzz);
+    
  */ 
   </script>
 
@@ -233,31 +258,17 @@
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then((choiceResult) => {
         if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the install prompt');
+          
+          canvas.style.display = 'block'; // Hide the canvas
         } else {
-          console.log('User dismissed the install prompt');
+          
+          canvas.style.display = 'block'; // Hide the canvas
         }
         deferredPrompt = null;
       });
     }
   }
-  // Function to create a button and append it to the body
-  function createInstallButton() {
-    // Create a new button element
-    const button = document.createElement('button');
-
-    // Set button text
-    button.innerText = 'Install';
-
-    // Add a click event listener to the button that calls showInstallPrompt
-    button.addEventListener('click', showInstallPrompt);
-
-    // Append the button to the body (or any other desired container)
-    document.body.appendChild(button);
-  }
-
-  // Call the function to create and display the install button
-  createInstallButton();
+  
 
 
 
@@ -270,18 +281,18 @@ async function checkForUpdate() {
     const currentVersion = await getCachedVersion(); // Get the version from the cache
     const latestVersion = await fetchLatestVersion(); // Fetch the latest version from the server
 
-    console.log('CURRENT version:', currentVersion);
-    console.log('LATEST version:', latestVersion);
+    
+    
 
     // Compare versions, refresh if a new version is detected
     if (latestVersion && currentVersion && currentVersion !== latestVersion) {
-      console.log('New version available:', latestVersion);
+      
 
       // Unregister all service workers
       if ('serviceWorker' in navigator) {
         const registrations = await navigator.serviceWorker.getRegistrations();
         for (let registration of registrations) {
-          console.log('Unregistering service worker:', registration);
+          
           await registration.unregister(); // Unregister old service worker
         }
       }
@@ -290,14 +301,15 @@ async function checkForUpdate() {
       const cacheNames = await caches.keys();
       await Promise.all(
         cacheNames.map((cacheName) => {
-          console.log('Deleting cache:', cacheName);
+          
           return caches.delete(cacheName); // Delete each cache
         })
       );
 
       // Reload page to register the new service worker and fetch fresh content
-      console.log('Reloading page to apply new version...');
+      
       window.location.reload(true);
+      window.location.href = window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'cache-bust=' + new Date().getTime();
     }
   } catch (error) {
     console.error('Error during version check:', error);
@@ -325,12 +337,12 @@ async function checkForUpdate() {
     const CACHE_NAME = 'fa-rpg-cache-v1'; // Ensure the same cache name is used here too!
 
     const cache = await caches.open(CACHE_NAME); // Open the cache
-    console.log('CACHE NAME:',CACHE_NAME);
+    
     const cachedResponse = await cache.match('/version.json'); // Look for version.json in cache
 
     if (cachedResponse) {
       const data = await cachedResponse.json();
-      console.log('Cached version.json data:', data); // Log the content of version.json
+       // Log the content of version.json
       return data.version; // Return the version key
     } else {
       console.warn('version.json not found in cache'); // Warn if not found in cache
@@ -355,10 +367,10 @@ async function checkForUpdate() {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/service-worker.js')
         .then(registration => {
-          console.log('Service Worker registered successfully:', registration.scope);
+          
         })
         .catch(error => {
-          console.log('Service Worker registration failed:', error);
+          
         });
     });
   }
