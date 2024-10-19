@@ -364,6 +364,14 @@ function resizeCanvasFS(width, height) {
       canvas.style.top = ((window.innerHeight - height) / 2) + 'px';
   }
 }
+// Create a new text node with the content "asdasd"
+var textNode = document.createTextNode("asdasd");
+// Create a new paragraph element
+var paragraph = document.createElement("p");
+//Append the text node to the paragraph
+paragraph.appendChild(textNode);
+// Append the paragraph to the body of the document
+document.body.appendChild(paragraph);
 
 // ConnectWallet();
 
