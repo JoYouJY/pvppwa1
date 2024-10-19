@@ -346,6 +346,10 @@ function EnterFullScreen(){
   else{
     window.unityInstance.SetFullscreen(1);
     isfullscreen = true;
+    // Wait 100ms, then resize the canvas
+    setTimeout(function() {
+      resizeCanvas(130, 90);
+    }, 100);
   }
 }
 
