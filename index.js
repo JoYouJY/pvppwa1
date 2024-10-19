@@ -348,8 +348,20 @@ function EnterFullScreen(){
     isfullscreen = true;
     // Wait 100ms, then resize the canvas
     setTimeout(function() {
-      resizeCanvas(130, 90);
+      resizeCanvasFS(130, 90);
     }, 100);
+  }
+}
+function resizeCanvasFS(width, height) {
+  var canvas = document.querySelector("#unity-canvas");
+  if (canvas) {
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      
+      // Center the canvas
+      canvas.style.position = 'absolute';
+      canvas.style.left = ((window.innerWidth - width) / 2) + 'px';
+      canvas.style.top = ((window.innerHeight - height) / 2) + 'px';
   }
 }
 
