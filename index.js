@@ -358,11 +358,13 @@ function JsCallFunction(type, arg_string){
 
 
   if(type == call_type.CONNECT){    
-    ConnectWallet()  
+    ConnectWallet();  
     //CreateAndConnectWeb2Wallet();
   }  
   else if(type == call_type.FULL_SCREEN){    
-    EnterFullScreen()  
+    //EnterFullScreen()  
+    // Instead of calling EnterFullScreen(), send a message to the parent window
+    window.parent.postMessage('toggleFullscreen', '*');
   }
   else if (type == call_type.SEND_CONTRACT){
     arg_string = arg_string.toString()

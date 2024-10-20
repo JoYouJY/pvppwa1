@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>DEMO FARPG</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="TemplateData/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="TemplateData/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="TemplateData/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.2/ethers.umd.js"></script>
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#000000">
+  </head>
+  <style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+    }
+    #unity-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    ::-webkit-scrollbar {
+        display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    html {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+      /* Set the background color to red */
+      #unity-loading-bar {
+        background-color: rgba(0, 0, 0, 0);
+      }
+      /* Set the background color of the canvas */
+      #unity-canvas {
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+    </style>
+  <!--<body style="background-image: url('https://assets.zyrosite.com/mxBlyJk3v4f0qnxK/jojo-art-YX4XO87g1KtqLDE8.jpg');">--> 
+    <!--body style="background-color: #000000d9;"></body-->
+    <body style="background-color: #000000;"></body>
+ 
+
+
+    <script>
+
+      function clearCache() {
+        o = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+        var t = {
+          name: "UnityCache",
+          version: 3
+        }
+        o.deleteDatabase(t.name);
+        location.reload();
+        //alert("Cache cleared successfully!");
+      }
+    </script>
+    <div id="unity-container" class="unity-desktop">
+
+      <canvas id="unity-canvas" width=1280 height=720 ></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+      <div id="unity-warning"></div>
+      <!--<div id="unity-footer">
+        <div id="unity-webgl-logo"></div>-->
+        <div id="unity-rotate-button" style="display:none;"></div>
+        <div id="unity-build-title" style="display:none; color:beige">Rotate Screen</div>
+        <!--div style="font-family: 'Arial Black', sans-serif; font-size: 22px; color: #010b16; text-shadow: 2px 2px 4px #15669b;
+        user-select: none;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none">PVP BETA 1 - DOES NOT REPRESENT FINAL PRODUCT. </div-->
+      </div>
+    </div>
+    <script>
+      var chains = "fantom";
+      /*document.body.appendChild(Object.assign(document.createElement("script"), {
+        type: "text/javascript",
+        src: "./network.js"
+      }));*/
+      // #####################################################################################################################   PVP Beta (3rd Format) (This version is not final) 
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var warningBanner = document.querySelector("#unity-warning");
+      const ASPECT_RATIO = 16 / 9;
+
+      function resizeCanvas() {
+          var windowWidth = window.innerWidth;
+          var windowHeight = window.innerHeight;
+          var windowRatio = windowWidth / windowHeight;
+
+          var newWidth, newHeight;
+
+          if (windowRatio > ASPECT_RATIO) {
+              // Window is wider than the target aspect ratio
+              newHeight = windowHeight;
+              newWidth = newHeight * ASPECT_RATIO;
+          } else {
+              // Window is taller than the target aspect ratio
+              newWidth = windowWidth;
+              newHeight = newWidth / ASPECT_RATIO;
+          }
+
+          canvas.style.width = newWidth + 'px';
+          canvas.style.height = newHeight + 'px';
+      }
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas(); // Call once to set initial size
+      // Call resizeCanvas again after 2 seconds
+      setTimeout(resizeCanvas, 2000);
+
+      //###########################################################################################################################
+      //###########################################################################################################################
+    </script>
+    <script  src="./index.js"></script> 
+    <script>
+      const isMobile = /iPhone|iPod/i.test(navigator.userAgent);
+
+      if (isMobile) {
+          // Create a div element for the unsupported message
+          const messageDiv = document.createElement('div');
+          
+          // Set the message text
+          messageDiv.innerText = 'Supporting Android and Windows now, iPhone coming soon.';
+          
+          // Style the message (optional)
+          messageDiv.style.position = 'fixed';
+          messageDiv.style.top = '50%';
+          messageDiv.style.left = '50%';
+          messageDiv.style.transform = 'translate(-50%, -50%)';
+          messageDiv.style.padding = '20px';
+          messageDiv.style.backgroundColor = '#FFFFFF'; // Red background
+          messageDiv.style.color = '#fff'; // White text
+          messageDiv.style.zIndex = '1000';
+          messageDiv.style.borderRadius = '5px';
+          messageDiv.style.textAlign = 'center';
+
+          // Append the message to the body
+          document.body.appendChild(messageDiv);
+        } else {
+        var container = document.querySelector("#unity-container");
+        var canvas = document.querySelector("#unity-canvas");
+        var loadingBar = document.querySelector("#unity-loading-bar");
+        var progressBarFull = document.querySelector("#unity-progress-bar-full");
+        //var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+        var warningBanner = document.querySelector("#unity-warning");
+        // Shows a temporary message banner/ribbon for a few seconds, or
+        // a permanent error message on top of the canvas if type=='error'.
+        // If type=='warning', a yellow highlight color is used.
+        // Modify or remove this function to customize the visually presented
+        // way that non-critical warnings and error messages are presented to the
+        // user.
+
+        function unityShowBanner(msg, type) {
+          function updateBannerVisibility() {
+            warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+          }
+          var div = document.createElement('div');
+          div.innerHTML = msg;
+          warningBanner.appendChild(div);
+          if (type == 'error') div.style = 'background: red; padding: 10px;';
+          else {
+            if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+            setTimeout(function() {
+              warningBanner.removeChild(div);
+              updateBannerVisibility();
+            }, 5000);
+          }
+          updateBannerVisibility();
+        }
+        var buildUrl = "Build";
+        var loaderUrl = buildUrl + "/Build.loader.js";
+        var config = {
+        dataUrl: buildUrl + "/Build.data",
+        frameworkUrl: buildUrl + "/Build.framework.js",
+        codeUrl: buildUrl + "/Build.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "Jojo Dream Studio",
+        productName: "FateAdventureRPG",
+        productVersion: "1.0.0",
+        showBanner: unityShowBanner,
+      };
+        // By default Unity keeps WebGL canvas render target size matched with
+        // the DOM size of the canvas element (scaled by window.devicePixelRatio)
+        // Set this to false if you want to decouple this synchronization from
+        // happening inside the engine, and you would instead like to size up
+        // the canvas DOM size and WebGL render target sizes yourself.
+        // config.matchWebGLToCanvasSize = false;
+        /*      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                container.className = "unity-mobile";
+                // Avoid draining fillrate performance on mobile devices,
+                // and default/override low DPI mode on mobile browsers.
+                config.devicePixelRatio = 1;
+                unityShowBanner('WebGL builds are not supported on mobile devices.');
+              } else {
+                canvas.style.width = "1280px";
+                canvas.style.height = "720px";
+              }
+        */
+        loadingBar.style.display = "block";
+        var script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+          createUnityInstance(canvas, config, (progress) => {
+            progressBarFull.style.width = 100 * progress + "%";
+            }).then((unityInstance) => {
+              window.unityInstance = unityInstance;
+              loadingBar.style.display = "none";
+              setTimeout(switchToFantom, 3127);
+              
+              //showInstallPrompt(); // Add this line to show the install prompt
+              
+            }).catch((message) => {
+              alert(message);
+            });
+        };
+        document.body.appendChild(script);
+        }
+    </script>
+
+    <script>
+      
+      // Connect to the Web3 provider
+      //const web3 = new Web3('https://rpc.ankr.com/fantom');
+      //const web3 = new Web3('https://rpcapi.sonic.fantom.network/');
+
+
+      // Retrieve the current gas price
+      /*
+      window.getAggressiveGasPrice = async function() {
+      try {
+        // Retrieve the current gas price
+        const gasPrice = await web3.eth.getGasPrice();
+        // Convert the gas price to BigInt
+        const gasPriceBigInt = BigInt(gasPrice);
+        // Adjust the gas price by multiplying with a factor (e.g., 2 for 100% increase)
+        const aggressiveGasPrice = gasPriceBigInt * BigInt(15) / BigInt(10); // Multiplies by 1.5 as an example
+        // Convert the gas price to Gwei or other units if desired
+        const aggressiveGasPriceGwei = web3.utils.fromWei(aggressiveGasPrice.toString(), 'gwei');
+        
+        window.unityInstance.SendMessage("Web3Manager", "UpdateGasPrice", aggressiveGasPrice.toString());
+        return aggressiveGasPrice.toString(); // Return the aggressive gas price
+      } catch (error) {
+        console.error('Error:', error);
+        throw error; // Throw the error
+      }
+    };
+    let zzz = window.getAggressiveGasPrice();
+    
+ */ 
+  </script>
+
+<script>
+  let deferredPrompt;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+
+  function showInstallPrompt() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          
+          canvas.style.display = 'block'; // Hide the canvas
+        } else {
+          
+          canvas.style.display = 'block'; // Hide the canvas
+        }
+        deferredPrompt = null;
+      });
+    }
+  }
+  
+
+
+
+
+
+//-----------------------------version checking-------------------------------------------------
+
+async function checkForUpdate() {
+  try {
+    const currentVersion = await getCachedVersion(); // Get the version from the cache
+    const latestVersion = await fetchLatestVersion(); // Fetch the latest version from the server
+
+    
+    
+
+    // Compare versions, refresh if a new version is detected
+    if (latestVersion && currentVersion && currentVersion !== latestVersion) {
+      
+
+      // Unregister all service workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (let registration of registrations) {
+          
+          await registration.unregister(); // Unregister old service worker
+        }
+      }
+
+      // Clear all caches
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames.map((cacheName) => {
+          
+          return caches.delete(cacheName); // Delete each cache
+        })
+      );
+
+      // Reload page to register the new service worker and fetch fresh content
+      
+      window.location.reload(true);
+      window.location.href = window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'cache-bust=' + new Date().getTime();
+    }
+  } catch (error) {
+    console.error('Error during version check:', error);
+  }
+}
+
+
+
+  // Function to fetch the latest version.json from the server
+  async function fetchLatestVersion() {
+    try {
+      const response = await fetch('/version.json', { cache: 'no-store' });
+      const data = await response.json();
+      return data.version;
+    } catch (error) {
+      console.error('Error fetching latest version:', error);
+      return null;
+    }
+  }
+
+  // Function to get the version cached by the service worker
+
+  async function getCachedVersion() {
+  try {
+    const CACHE_NAME = 'fa-rpg-cache-v1'; // Ensure the same cache name is used here too!
+
+    const cache = await caches.open(CACHE_NAME); // Open the cache
+    
+    const cachedResponse = await cache.match('/version.json'); // Look for version.json in cache
+
+    if (cachedResponse) {
+      const data = await cachedResponse.json();
+       // Log the content of version.json
+      return data.version; // Return the version key
+    } else {
+      console.warn('version.json not found in cache'); // Warn if not found in cache
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching cached version:', error);
+    return null;
+  }
+}
+
+  // Call this function periodically or on page load to check for updates
+  setInterval(checkForUpdate, 600000); // Check every 60 minute
+  // Delay the execution of checkForUpdate by 3 seconds after the page is loaded
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      checkForUpdate();
+    }, 5000); // 3000 milliseconds = 3 seconds
+  });
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(registration => {
+          
+        })
+        .catch(error => {
+          
+        });
+    });
+  }
+//----------------------------------------------------------------------
+     
+  </script>
+
+
+
+</html>
