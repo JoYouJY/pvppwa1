@@ -342,39 +342,12 @@ function EnterFullScreen(){
   if (isfullscreen){
     window.unityInstance.SetFullscreen(0);
     isfullscreen = false;
-    console.log("here2");
   } 
   else{
     window.unityInstance.SetFullscreen(1);
     isfullscreen = true;
-    // Wait 100ms, then resize the canvas
-    console.log("here");
-   // setTimeout(function() {
-   //   resizeCanvasFS(130, 90);
-   // }, 100);
   }
 }
-/*
-function resizeCanvasFS(width, height) {
-  var canvas = document.querySelector("#unity-canvas");
-  if (canvas) {
-      canvas.style.width = width + 'px';
-      canvas.style.height = height + 'px';
-      
-      // Center the canvas
-      canvas.style.position = 'absolute';
-      canvas.style.left = ((window.innerWidth - width) / 2) + 'px';
-      canvas.style.top = ((window.innerHeight - height) / 2) + 'px';
-  }
-}*/
-// Create a new text node with the content "asdasd"
-var textNode = document.createTextNode("11asdasd");
-// Create a new paragraph element
-var paragraph = document.createElement("p");
-//Append the text node to the paragraph
-paragraph.appendChild(textNode);
-// Append the paragraph to the body of the document
-document.body.appendChild(paragraph);
 
 // ConnectWallet();
 
@@ -1073,4 +1046,3 @@ function hideCanvasAndShowPrompt() {
   // Append the modal to the body
   document.body.appendChild(modal);
 }
-
