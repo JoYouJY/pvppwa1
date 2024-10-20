@@ -342,16 +342,19 @@ function EnterFullScreen(){
   if (isfullscreen){
     window.unityInstance.SetFullscreen(0);
     isfullscreen = false;
+    console.log("here2");
   } 
   else{
     window.unityInstance.SetFullscreen(1);
     isfullscreen = true;
     // Wait 100ms, then resize the canvas
-    setTimeout(function() {
-      resizeCanvasFS(130, 90);
-    }, 100);
+    console.log("here");
+   // setTimeout(function() {
+   //   resizeCanvasFS(130, 90);
+   // }, 100);
   }
 }
+/*
 function resizeCanvasFS(width, height) {
   var canvas = document.querySelector("#unity-canvas");
   if (canvas) {
@@ -363,9 +366,9 @@ function resizeCanvasFS(width, height) {
       canvas.style.left = ((window.innerWidth - width) / 2) + 'px';
       canvas.style.top = ((window.innerHeight - height) / 2) + 'px';
   }
-}
+}*/
 // Create a new text node with the content "asdasd"
-var textNode = document.createTextNode("asdasd");
+var textNode = document.createTextNode("11asdasd");
 // Create a new paragraph element
 var paragraph = document.createElement("p");
 //Append the text node to the paragraph
