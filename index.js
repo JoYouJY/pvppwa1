@@ -1048,3 +1048,5 @@ function hideCanvasAndShowPrompt() {
   // Append the modal to the body
   document.body.appendChild(modal);
 }
+
+document.body.style.backgroundColor = "white";
