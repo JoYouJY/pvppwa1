@@ -1049,4 +1049,4 @@ function hideCanvasAndShowPrompt() {
   document.body.appendChild(modal);
 }
 
-document.body.style.backgroundColor = "green";
+document.body.style.backgroundColor = "purple";
