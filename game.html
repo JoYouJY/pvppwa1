@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en-us">
   <head>
+    <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DEMO FARPG</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="TemplateData/apple-touch-icon.png">
@@ -37,7 +37,9 @@
     }
       /* Set the background color to red */
       #unity-loading-bar {
-        background-color: rgba(0, 0, 0, 0);
+        background-color: rgba(222, 199, 22, 0);
+        
+        
       }
       /* Set the background color of the canvas */
       #unity-canvas {
@@ -65,9 +67,10 @@
     </script>
     <div id="unity-container" class="unity-desktop">
 
-      <canvas id="unity-canvas" width=1280 height=720 ></canvas>
+      <canvas id="unity-canvas" width=1920 height=1080 ></canvas>
       <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
+        <!--<div id="unity-logo"></div>-->
+        <video src="TemplateData/Characters moving L loading.mp4" autoplay loop muted style="justify-content: center;"></video>
         <div id="unity-progress-bar-empty">
           <div id="unity-progress-bar-full"></div>
         </div>
@@ -75,8 +78,8 @@
       <div id="unity-warning"></div>
       <!--<div id="unity-footer">
         <div id="unity-webgl-logo"></div>-->
-        <div id="unity-rotate-button" style="display:none;"></div>
-        <div id="unity-build-title" style="display:none; color:beige">Rotate Screen</div>
+ <!--       <div id="unity-rotate-button" style="display:none;"></div>
+           <div id="unity-build-title" style="display:none; color:beige">Rotate Screen</div>-->
         <!--div style="font-family: 'Arial Black', sans-serif; font-size: 22px; color: #010b16; text-shadow: 2px 2px 4px #15669b;
         user-select: none;
         -moz-user-select: none;
@@ -91,63 +94,35 @@
         src: "./network.js"
       }));*/
       // #####################################################################################################################   PVP Beta (3rd Format) (This version is not final) 
-      
-      var progressBarFull = document.querySelector("#unity-progress-bar-full");
-      var warningBanner = document.querySelector("#unity-warning");
-      const ASPECT_RATIO = 16 / 9;
-      const SCALE_FACTOR = 2; // Changed from 2 to 8
-      const isAndroid = /Android/i.test(navigator.userAgent);
       var container = document.querySelector("#unity-container");
       var canvas = document.querySelector("#unity-canvas");
       var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var warningBanner = document.querySelector("#unity-warning");
+      const ASPECT_RATIO = 16 / 9;
 
       function resizeCanvas() {
-        let windowWidth = window.innerWidth;
-        let windowHeight = window.innerHeight;
-        let windowRatio = windowWidth / windowHeight;
+          var windowWidth = window.innerWidth;
+          var windowHeight = window.innerHeight;
+          var windowRatio = windowWidth / windowHeight;
 
-        let newWidth, newHeight;
+          var newWidth, newHeight;
 
-        if (windowRatio > ASPECT_RATIO) {
-          // Window is wider than the target aspect ratio
-          newHeight = windowHeight;
-          newWidth = newHeight * ASPECT_RATIO;
-        } else {
-          // Window is taller than the target aspect ratio
-          newWidth = windowWidth;
-          newHeight = newWidth / ASPECT_RATIO;
-        }
+          if (windowRatio > ASPECT_RATIO) {
+              // Window is wider than the target aspect ratio
+              newHeight = windowHeight;
+              newWidth = newHeight * ASPECT_RATIO;
+          } else {
+              // Window is taller than the target aspect ratio
+              newWidth = windowWidth;
+              newHeight = newWidth / ASPECT_RATIO;
+          }
 
-        // Scale down the canvas size by half on Android devices for performance.
-        if (isAndroid) {
-          // Set the actual canvas resolution to 1/8th
-          canvas.width = Math.round(newWidth / SCALE_FACTOR);
-          canvas.height = Math.round(newHeight / SCALE_FACTOR);
-          
-          // Set the display size to full (this creates the 8x scaling effect)
           canvas.style.width = newWidth + 'px';
           canvas.style.height = newHeight + 'px';
-          
-          // Log the actual resolution vs display size for debugging
-          console.log(`Render resolution: ${canvas.width}x${canvas.height}`);
-          console.log(`Display size: ${newWidth}x${newHeight}`);
-          // Apply 2x zoom to scale it back up visually
-          //canvas.style.transform = "scale(8)";
-          canvas.style.transformOrigin = "center";
-
-          //config.devicePixelRatio = 1 / SCALE_FACTOR; // Changed from 0.5 to 0.125 (1/8)
-        } else {
-          // For non-mobile, keep original resolution
-          canvas.width = Math.round(newWidth);
-          canvas.height = Math.round(newHeight);
-          canvas.style.width = newWidth + 'px';
-          canvas.style.height = newHeight + 'px';
-        }
       }
-
-      // Resize initially and on window resize
       window.addEventListener('resize', resizeCanvas);
-      resizeCanvas();
+      resizeCanvas(); // Call once to set initial size
       // Call resizeCanvas again after 2 seconds
       setTimeout(resizeCanvas, 2000);
 
@@ -222,9 +197,6 @@
         productVersion: "1.0.0",
         showBanner: unityShowBanner,
       };
-      if (isAndroid) {
-        config.devicePixelRatio = 1 / SCALE_FACTOR; // Changed from 0.5 to 0.125 (1/8)
-      }
         // By default Unity keeps WebGL canvas render target size matched with
         // the DOM size of the canvas element (scaled by window.devicePixelRatio)
         // Set this to false if you want to decouple this synchronization from
