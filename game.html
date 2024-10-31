@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="en-us">
   <head>
-    <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>DEMO FARPG</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="TemplateData/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="TemplateData/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="TemplateData/favicon-16x16.png">
-    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="TemplateData/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.2/ethers.umd.js"></script>
 
@@ -92,35 +90,48 @@
         src: "./network.js"
       }));*/
       // #####################################################################################################################   PVP Beta (3rd Format) (This version is not final) 
-      var container = document.querySelector("#unity-container");
-      var canvas = document.querySelector("#unity-canvas");
-      var loadingBar = document.querySelector("#unity-loading-bar");
+      
       var progressBarFull = document.querySelector("#unity-progress-bar-full");
       var warningBanner = document.querySelector("#unity-warning");
       const ASPECT_RATIO = 16 / 9;
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
 
       function resizeCanvas() {
-          var windowWidth = window.innerWidth;
-          var windowHeight = window.innerHeight;
-          var windowRatio = windowWidth / windowHeight;
+        let windowWidth = window.innerWidth;
+        let windowHeight = window.innerHeight;
+        let windowRatio = windowWidth / windowHeight;
 
-          var newWidth, newHeight;
+        let newWidth, newHeight;
 
-          if (windowRatio > ASPECT_RATIO) {
-              // Window is wider than the target aspect ratio
-              newHeight = windowHeight;
-              newWidth = newHeight * ASPECT_RATIO;
-          } else {
-              // Window is taller than the target aspect ratio
-              newWidth = windowWidth;
-              newHeight = newWidth / ASPECT_RATIO;
-          }
+        if (windowRatio > ASPECT_RATIO) {
+          // Window is wider than the target aspect ratio
+          newHeight = windowHeight;
+          newWidth = newHeight * ASPECT_RATIO;
+        } else {
+          // Window is taller than the target aspect ratio
+          newWidth = windowWidth;
+          newHeight = newWidth / ASPECT_RATIO;
+        }
 
+        // Scale down the canvas size by half on Android devices for performance.
+        if (isAndroid) {
+          canvas.style.width = newWidth / 8 + 'px';
+          canvas.style.height = newHeight / 8 + 'px';
+          // Apply 2x zoom to scale it back up visually
+          canvas.style.transform = "scale(8)";
+          canvas.style.transformOrigin = "center";
+        } else {
           canvas.style.width = newWidth + 'px';
           canvas.style.height = newHeight + 'px';
+        }
       }
+
+      // Resize initially and on window resize
       window.addEventListener('resize', resizeCanvas);
-      resizeCanvas(); // Call once to set initial size
+      resizeCanvas();
       // Call resizeCanvas again after 2 seconds
       setTimeout(resizeCanvas, 2000);
 
