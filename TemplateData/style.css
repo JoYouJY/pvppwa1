@@ -15,3 +15,43 @@ body { padding: 0; margin: 0 }
 #unity-fullscreen-button { float: right; width: 38px; height: 38px; background: url('fullscreen-button.png') no-repeat center }
 #unity-warning { position: absolute; left: 50%; top: 5%; transform: translate(-50%); background: white; padding: 10px; display: none }
 .web3modal-modal-card { font-family: sans-serif}
+
+
+.progress {
+    --progress: 100%;
+    
+    width: 500px;
+    height: 10px;
+    margin: 10px auto;
+    border: 1px solid #fff;
+    padding: 2px 2px;
+    box-shadow: 0 0 10px #000000;
+  }
+  
+  .progress .bar {
+    width: var(--progress);
+    height: 100%;
+    background: white;
+    background-repeat: repeat;
+    box-shadow: 0 0 10px 0px white;
+    animation: 
+      shine 4s ease-in infinite,
+      end 1s ease-out 1;
+    transition: width 3s ease;
+  }
+  
+  @property --progress {
+    syntax: "<length>";
+    initial-value: 0%;
+    inherits: true;
+  }
+  
+  @keyframes shine {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 50px; }
+  }
+  
+  @keyframes end {
+    0%, 100% { box-shadow: 0 0 10px 0px rgb(243, 233, 215); }
+    50% { box-shadow: 0 0 15px 5px rgb(250, 237, 214); }
+  }

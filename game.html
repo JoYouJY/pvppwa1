@@ -35,16 +35,51 @@
         -ms-overflow-style: none;  /* IE and Edge */
         scrollbar-width: none;  /* Firefox */
     }
-      /* Set the background color to red */
+      /* Set the background color to red 
       #unity-loading-bar {
-        background-color: rgba(222, 199, 22, 0);
-        
-        
-      }
+        background-color: rgba(222, 199, 22, 0.5);
+        position: absolute;
+        left: 25%; 
+        top: 50%;
+        transform: translate(0, -50%);
+        width: 50%;  
+        text-align: center;
+    }
+
+    #unity-logo {
+        width: 100%;
+        height: auto;
+        margin-bottom: 20px;
+    }
+
+    #unity-progress-bar-empty {
+        width: 100%;
+        height: 20px;
+        background-color: rgba(245, 13, 13, 0.3);
+        margin-top: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    #unity-progress-bar-full {
+        width: 0%;
+        height: 100%;
+        background-color: #12e60e;
+        transition: width 0.3s ease;
+    }
+
+    video {
+        max-width: 100%;
+        height: auto;
+        margin: 0 auto;
+        display: block;
+    }*/
       /* Set the background color of the canvas */
       #unity-canvas {
         background-color: rgba(0, 0, 0, 0.5);
       }
+      
+      
     </style>
   <!--<body style="background-image: url('https://assets.zyrosite.com/mxBlyJk3v4f0qnxK/jojo-art-YX4XO87g1KtqLDE8.jpg');">--> 
     <!--body style="background-color: #000000d9;"></body-->
@@ -68,17 +103,29 @@
     <div id="unity-container" class="unity-desktop">
 
       <canvas id="unity-canvas" width=1920 height=1080 ></canvas>
+<!--  
       <div id="unity-loading-bar">
-        <!--<div id="unity-logo"></div>-->
         <video src="TemplateData/Characters moving L loading.mp4" autoplay loop muted style="justify-content: center;"></video>
         <div id="unity-progress-bar-empty">
           <div id="unity-progress-bar-full"></div>
         </div>
+      </div>-->
+      <div id="unity-loading-bar" style="background: rgba(0, 0, 0, 0);">
+        <div class="video-container" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0);">
+          <video src="TemplateData/Characters moving L loading.mp4" autoplay loop muted ></video>
+        </div>
+      
+        <div class="progress">
+          <div class="bar">
+            <div class="progress-value"></div>
+          </div>
+        </div>
       </div>
-      <div id="unity-warning"></div>
-      <!--<div id="unity-footer">
-        <div id="unity-webgl-logo"></div>-->
- <!--       <div id="unity-rotate-button" style="display:none;"></div>
+
+ <!--     <div id="unity-warning"></div>
+      <div id="unity-footer">
+        <div id="unity-webgl-logo"></div>
+      <div id="unity-rotate-button" style="display:none;"></div>
            <div id="unity-build-title" style="display:none; color:beige">Rotate Screen</div>-->
         <!--div style="font-family: 'Arial Black', sans-serif; font-size: 22px; color: #010b16; text-shadow: 2px 2px 4px #15669b;
         user-select: none;
@@ -97,7 +144,7 @@
       var container = document.querySelector("#unity-container");
       var canvas = document.querySelector("#unity-canvas");
       var loadingBar = document.querySelector("#unity-loading-bar");
-      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      //var progressBarFull = document.querySelector("#unity-progress-bar-full");
       var warningBanner = document.querySelector("#unity-warning");
       const ASPECT_RATIO = 16 / 9;
 
@@ -158,7 +205,7 @@
         var container = document.querySelector("#unity-container");
         var canvas = document.querySelector("#unity-canvas");
         var loadingBar = document.querySelector("#unity-loading-bar");
-        var progressBarFull = document.querySelector("#unity-progress-bar-full");
+        //var progressBarFull = document.querySelector("#unity-progress-bar-full");
         //var fullscreenButton = document.querySelector("#unity-fullscreen-button");
         var warningBanner = document.querySelector("#unity-warning");
         // Shows a temporary message banner/ribbon for a few seconds, or
@@ -214,12 +261,23 @@
                 canvas.style.height = "720px";
               }
         */
+        const progressbar = document.querySelector(".progress");
+/*
+        progressbar.addEventListener("click", () => {
+          const value = Math.floor(Math.random() * 100);
+          progressbar.style.setProperty("--progress", `${value}%`);
+        });*/
+
         loadingBar.style.display = "block";
         var script = document.createElement("script");
         script.src = loaderUrl;
         script.onload = () => {
           createUnityInstance(canvas, config, (progress) => {
-            progressBarFull.style.width = 100 * progress + "%";
+            //progressBarFull.style.width = 100 * progress + "%";
+            
+            //console.log(progress);
+            const value = Math.floor(progress * 100);
+            progressbar.style.setProperty("--progress", `${value}%`);
             }).then((unityInstance) => {
               window.unityInstance = unityInstance;
               loadingBar.style.display = "none";
@@ -232,6 +290,18 @@
             });
         };
         document.body.appendChild(script);
+
+
+
+
+
+
+
+
+
+
+
+
         }
     </script>
 

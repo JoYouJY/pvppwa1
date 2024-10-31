@@ -971,7 +971,7 @@ async function switchToFantom() {
 // Call the connectToFantom function to connect to the Fantom chain
 //connectToFantom();
 
-
+/*
 // Get a reference to the button element
 const rotateButton = document.getElementById("unity-rotate-button");
 
@@ -981,7 +981,7 @@ rotateButton.addEventListener("click", function() {
   rotateCanvas();
    // Optional for debugging
 });
-
+*/
 var isHorizontal = true;
 function rotateCanvas() {
   
