@@ -37,7 +37,6 @@ body { padding: 0; margin: 0 }
     animation: 
       shine 4s ease-in infinite,
       end 1s ease-out 1;
-    transition: width 3s ease;
   }
   
   @property --progress {
@@ -46,12 +45,3 @@ body { padding: 0; margin: 0 }
     inherits: true;
   }
   
-  @keyframes shine {
-    0% { background-position: 0 0; }
-    100% { background-position: 0 50px; }
-  }
-  
-  @keyframes end {
-    0%, 100% { box-shadow: 0 0 10px 0px rgb(243, 233, 215); }
-    50% { box-shadow: 0 0 15px 5px rgb(250, 237, 214); }
-  }
