@@ -2,6 +2,7 @@
 <html lang="en-us">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DEMO FARPG</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="TemplateData/apple-touch-icon.png">
@@ -94,6 +95,7 @@
       var progressBarFull = document.querySelector("#unity-progress-bar-full");
       var warningBanner = document.querySelector("#unity-warning");
       const ASPECT_RATIO = 16 / 9;
+      const SCALE_FACTOR = 2; // Changed from 2 to 8
       const isAndroid = /Android/i.test(navigator.userAgent);
       var container = document.querySelector("#unity-container");
       var canvas = document.querySelector("#unity-canvas");
@@ -118,12 +120,26 @@
 
         // Scale down the canvas size by half on Android devices for performance.
         if (isAndroid) {
-          canvas.style.width = newWidth / 8 + 'px';
-          canvas.style.height = newHeight / 8 + 'px';
+          // Set the actual canvas resolution to 1/8th
+          canvas.width = Math.round(newWidth / SCALE_FACTOR);
+          canvas.height = Math.round(newHeight / SCALE_FACTOR);
+          
+          // Set the display size to full (this creates the 8x scaling effect)
+          canvas.style.width = newWidth + 'px';
+          canvas.style.height = newHeight + 'px';
+          
+          // Log the actual resolution vs display size for debugging
+          console.log(`Render resolution: ${canvas.width}x${canvas.height}`);
+          console.log(`Display size: ${newWidth}x${newHeight}`);
           // Apply 2x zoom to scale it back up visually
-          canvas.style.transform = "scale(8)";
+          //canvas.style.transform = "scale(8)";
           canvas.style.transformOrigin = "center";
+
+          //config.devicePixelRatio = 1 / SCALE_FACTOR; // Changed from 0.5 to 0.125 (1/8)
         } else {
+          // For non-mobile, keep original resolution
+          canvas.width = Math.round(newWidth);
+          canvas.height = Math.round(newHeight);
           canvas.style.width = newWidth + 'px';
           canvas.style.height = newHeight + 'px';
         }
@@ -206,6 +222,9 @@
         productVersion: "1.0.0",
         showBanner: unityShowBanner,
       };
+      if (isAndroid) {
+        config.devicePixelRatio = 1 / SCALE_FACTOR; // Changed from 0.5 to 0.125 (1/8)
+      }
         // By default Unity keeps WebGL canvas render target size matched with
         // the DOM size of the canvas element (scaled by window.devicePixelRatio)
         // Set this to false if you want to decouple this synchronization from
