@@ -1,475 +1,445 @@
 <!DOCTYPE html>
 <html lang="en-us">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>DEMO FARPG</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="TemplateData/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="TemplateData/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="TemplateData/favicon-16x16.png">
-    <link rel="stylesheet" href="TemplateData/style.css">
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>TEST FARPG</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="TemplateData/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="TemplateData/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="TemplateData/favicon-16x16.png"
+    />
+    <link rel="stylesheet" href="TemplateData/style.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.2/ethers.umd.js"></script>
-
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#000000" />
   </head>
+
   <style>
-    body, html {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        overflow: hidden;
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
     }
     #unity-canvas {
-        width: 100%;
-        height: 100%;
-        display: block;
+      width: 100%;
+      height: 100%;
+      display: block;
     }
     /* Hide scrollbar for Chrome, Safari and Opera */
     ::-webkit-scrollbar {
-        display: none;
+      display: none;
     }
     /* Hide scrollbar for IE, Edge and Firefox */
     html {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+      scrollbar-width: none; /* Firefox */
     }
-      /* Set the background color to red 
-      #unity-loading-bar {
-        background-color: rgba(222, 199, 22, 0.5);
-        position: absolute;
-        left: 25%; 
-        top: 50%;
-        transform: translate(0, -50%);
-        width: 50%;  
-        text-align: center;
+    #unity-canvas {
+      background-color: rgba(0, 0, 0, 0.5);
     }
+  </style>
 
-    #unity-logo {
-        width: 100%;
-        height: auto;
-        margin-bottom: 20px;
-    }
+  <body style="background-color: #000000">
+    <div id="debridge-widget-container" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1001; background-color: rgba(0, 0, 0, 0.8); padding: 20px; border-radius: 10px;">
+    <button onclick="closeDeBridgeWidget()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>
+    <iframe id="debridge-widget-iframe" style="width: 400px; height: 600px; border: none;"></iframe>
+</div>
 
-    #unity-progress-bar-empty {
-        width: 100%;
-        height: 20px;
-        background-color: rgba(245, 13, 13, 0.3);
-        margin-top: 20px;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    #unity-progress-bar-full {
-        width: 0%;
-        height: 100%;
-        background-color: #12e60e;
-        transition: width 0.3s ease;
-    }
-
-    video {
-        max-width: 100%;
-        height: auto;
-        margin: 0 auto;
-        display: block;
-    }*/
-      /* Set the background color of the canvas */
-      #unity-canvas {
-        background-color: rgba(0, 0, 0, 0.5);
-      }
-      
-      
-    </style>
-  <!--<body style="background-image: url('https://assets.zyrosite.com/mxBlyJk3v4f0qnxK/jojo-art-YX4XO87g1KtqLDE8.jpg');">--> 
-    <!--body style="background-color: #000000d9;"></body-->
-    <body style="background-color: #000000;"></body>
- 
-
+    <!-- A separate module script for index.js -->
+    <script type="module" src="./index.js"></script>
 
     <script>
-
       function clearCache() {
-        o = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+        o =
+          window.indexedDB ||
+          window.mozIndexedDB ||
+          window.webkitIndexedDB ||
+          window.msIndexedDB;
         var t = {
           name: "UnityCache",
           version: 3
-        }
+        };
         o.deleteDatabase(t.name);
         location.reload();
         //alert("Cache cleared successfully!");
       }
     </script>
-    <div id="unity-container" class="unity-desktop">
 
-      <canvas id="unity-canvas" width=1920 height=1080 ></canvas>
-<!--  
-      <div id="unity-loading-bar">
-        <video src="TemplateData/Characters moving L loading.mp4" autoplay loop muted style="justify-content: center;"></video>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
+    <div id="unity-container" class="unity-desktop">
+      <canvas id="unity-canvas" width="1920" height="1080"></canvas>
+
+      <div id="unity-loading-bar" style="background: rgba(0, 0, 0, 0)">
+        <div
+          class="video-container"
+          style="
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0);
+          "
+        >
+          <video
+            src="TemplateData/Characters moving L loading.mp4"
+            autoplay
+            loop
+            muted
+          ></video>
         </div>
-      </div>-->
-      <div id="unity-loading-bar" style="background: rgba(0, 0, 0, 0);">
-        <div class="video-container" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0);">
-          <video src="TemplateData/Characters moving L loading.mp4" autoplay loop muted ></video>
-        </div>
-      
+
         <div class="progress">
           <div class="bar">
             <div class="progress-value"></div>
           </div>
         </div>
       </div>
-
- <!--     <div id="unity-warning"></div>
-      <div id="unity-footer">
-        <div id="unity-webgl-logo"></div>
-      <div id="unity-rotate-button" style="display:none;"></div>
-           <div id="unity-build-title" style="display:none; color:beige">Rotate Screen</div>-->
-        <!--div style="font-family: 'Arial Black', sans-serif; font-size: 22px; color: #010b16; text-shadow: 2px 2px 4px #15669b;
-        user-select: none;
-        -moz-user-select: none;
-        -webkit-user-select: none;
-        -ms-user-select: none">PVP BETA 1 - DOES NOT REPRESENT FINAL PRODUCT. </div-->
-      </div>
     </div>
+
     <script>
       var chains = "fantom";
-      /*document.body.appendChild(Object.assign(document.createElement("script"), {
-        type: "text/javascript",
-        src: "./network.js"
-      }));*/
-      // #####################################################################################################################   PVP Beta (3rd Format) (This version is not final) 
+
       var container = document.querySelector("#unity-container");
       var canvas = document.querySelector("#unity-canvas");
       var loadingBar = document.querySelector("#unity-loading-bar");
-      //var progressBarFull = document.querySelector("#unity-progress-bar-full");
       var warningBanner = document.querySelector("#unity-warning");
       const ASPECT_RATIO = 16 / 9;
 
       function resizeCanvas() {
-          var windowWidth = window.innerWidth;
-          var windowHeight = window.innerHeight;
-          var windowRatio = windowWidth / windowHeight;
+        var windowWidth = window.innerWidth;
+        var windowHeight = window.innerHeight;
+        var windowRatio = windowWidth / windowHeight;
 
-          var newWidth, newHeight;
+        var newWidth, newHeight;
 
-          if (windowRatio > ASPECT_RATIO) {
-              // Window is wider than the target aspect ratio
-              newHeight = windowHeight;
-              newWidth = newHeight * ASPECT_RATIO;
-          } else {
-              // Window is taller than the target aspect ratio
-              newWidth = windowWidth;
-              newHeight = newWidth / ASPECT_RATIO;
-          }
+        if (windowRatio > ASPECT_RATIO) {
+          // Window is wider than the target aspect ratio
+          newHeight = windowHeight;
+          newWidth = newHeight * ASPECT_RATIO;
+        } else {
+          // Window is taller than the target aspect ratio
+          newWidth = windowWidth;
+          newHeight = newWidth / ASPECT_RATIO;
+        }
 
-          canvas.style.width = newWidth + 'px';
-          canvas.style.height = newHeight + 'px';
+        canvas.style.width = newWidth + "px";
+        canvas.style.height = newHeight + "px";
       }
-      window.addEventListener('resize', resizeCanvas);
+
+      window.addEventListener("resize", resizeCanvas);
       resizeCanvas(); // Call once to set initial size
       // Call resizeCanvas again after 2 seconds
       setTimeout(resizeCanvas, 2000);
-
-      //###########################################################################################################################
-      //###########################################################################################################################
     </script>
-    <script  src="./index.js"></script> 
+
     <script>
-      const isMobile = /iPhone|iPod/i.test(navigator.userAgent);
+      //########### CHUNK LOADER FUNCTION ###########
+      async function loadAndCombineChunks(chunkUrls) {
+        console.log("Starting to load and combine chunks...");
+
+        const totalChunks = chunkUrls.length;
+        let progressValue = 0;
+        const chunks = new Array(totalChunks); // To maintain the order of chunks
+
+        // Function to update the progress bar
+        const updateProgress = () => {
+          document
+            .querySelector(".progress")
+            .style.setProperty("--progress", `${progressValue}%`);
+        };
+
+        // Create an array of promises with individual progress updates
+        const chunkPromises = chunkUrls.map((url, index) =>
+          fetch(url)
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`Failed to load chunk: ${url}`);
+              }
+              return response.arrayBuffer();
+            })
+            .then((data) => {
+              chunks[index] = data; // Store the chunk in the correct order
+              progressValue += 100 / totalChunks;
+              updateProgress(); // Update the progress bar
+              console.log(
+                `Chunk ${index + 1}/${totalChunks} loaded. Progress: ${progressValue.toFixed(
+                  2
+                )}%`
+              );
+            })
+        );
+
+        try {
+          // Wait for all chunks to be fetched
+          await Promise.all(chunkPromises);
+          console.log("All chunks have been successfully loaded.");
+        } catch (error) {
+          console.error("Error combining chunks:", error);
+          throw error; // Re-throw the error after logging it
+        }
+
+        // Combine all chunks into a single ArrayBuffer
+        const totalSize = chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0);
+        const combinedBuffer = new Uint8Array(totalSize);
+        let offset = 0;
+
+        for (const chunk of chunks) {
+          combinedBuffer.set(new Uint8Array(chunk), offset);
+          offset += chunk.byteLength;
+        }
+
+        // Create a Blob URL from the combined buffer
+        const combinedBlob = new Blob([combinedBuffer], { type: "application/octet-stream" });
+        const combinedDataUrl = URL.createObjectURL(combinedBlob);
+
+        return combinedDataUrl;
+      }
+    </script>
+
+    <script>
+      // Update the regex to check for both iPhone and iPad
+      const isMobile = /iPhone|iPad/i.test(navigator.userAgent);
 
       if (isMobile) {
-          // Create a div element for the unsupported message
-          const messageDiv = document.createElement('div');
-          
-          // Set the message text
-          messageDiv.innerText = 'Supporting Android and Windows now, iPhone coming soon.';
-          
-          // Style the message (optional)
-          messageDiv.style.position = 'fixed';
-          messageDiv.style.top = '50%';
-          messageDiv.style.left = '50%';
-          messageDiv.style.transform = 'translate(-50%, -50%)';
-          messageDiv.style.padding = '20px';
-          messageDiv.style.backgroundColor = '#234567'; // Red background
-          messageDiv.style.color = 'yellow'; // White text
-          messageDiv.style.zIndex = '1000';
-          messageDiv.style.borderRadius = '5px';
-          messageDiv.style.textAlign = 'center';
+        // Create a div element for the unsupported message
+        const messageDiv = document.createElement("div");
 
-          // Append the message to the body
-          document.body.appendChild(messageDiv);
-        } else {
+        // Set the message text
+        messageDiv.innerText =
+          "⚠️ WARNING: iPhone/iPad's WebKit detected. WebKit's RAM management may terminate the browser if memory usage is too high. Would you like to proceed?\n\n(Android, Windows, MacBook systems are recommended for optimal performance.)";
+
+        // Style the message (optional)
+        messageDiv.style.position = "fixed";
+        messageDiv.style.top = "50%";
+        messageDiv.style.left = "50%";
+        messageDiv.style.transform = "translate(-50%, -50%)";
+        messageDiv.style.padding = "20px";
+        messageDiv.style.backgroundColor = "#234567";
+        messageDiv.style.color = "yellow";
+        messageDiv.style.zIndex = "1000";
+        messageDiv.style.borderRadius = "5px";
+        messageDiv.style.textAlign = "center";
+
+        // Create a "Continue" button
+        const continueButton = document.createElement("button");
+        continueButton.innerText = "Proceed Anyway";
+        continueButton.style.marginTop = "15px";
+        continueButton.style.padding = "10px 20px";
+        continueButton.style.backgroundColor = "#ffffff";
+        continueButton.style.color = "#234567";
+        continueButton.style.border = "none";
+        continueButton.style.borderRadius = "5px";
+        continueButton.style.cursor = "pointer";
+
+        // Append the button to the message div
+        messageDiv.appendChild(document.createElement("br"));
+        messageDiv.appendChild(continueButton);
+
+        // Append the message to the body
+        document.body.appendChild(messageDiv);
+
+        // Add click event to the "Continue" button
+        continueButton.addEventListener("click", () => {
+          // Remove the message div
+          document.body.removeChild(messageDiv);
+
+          // Proceed to load Unity as on non-iOS devices
+          loadUnity();
+        });
+      } else {
+        // Load Unity immediately on non-iOS devices
+        loadUnity();
+      }
+
+      //########### MAIN UNITY LOADER ###########
+      function loadUnity() {
         var container = document.querySelector("#unity-container");
         var canvas = document.querySelector("#unity-canvas");
         var loadingBar = document.querySelector("#unity-loading-bar");
-        //var progressBarFull = document.querySelector("#unity-progress-bar-full");
-        //var fullscreenButton = document.querySelector("#unity-fullscreen-button");
         var warningBanner = document.querySelector("#unity-warning");
-        // Shows a temporary message banner/ribbon for a few seconds, or
-        // a permanent error message on top of the canvas if type=='error'.
-        // If type=='warning', a yellow highlight color is used.
-        // Modify or remove this function to customize the visually presented
-        // way that non-critical warnings and error messages are presented to the
-        // user.
-
-        function unityShowBanner(msg, type) {
-          function updateBannerVisibility() {
-            warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
-          }
-          var div = document.createElement('div');
-          div.innerHTML = msg;
-          warningBanner.appendChild(div);
-          if (type == 'error') div.style = 'background: red; padding: 10px;';
-          else {
-            if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-            setTimeout(function() {
-              warningBanner.removeChild(div);
-              updateBannerVisibility();
-            }, 5000);
-          }
-          updateBannerVisibility();
-        }
-        var buildUrl = "Build";
-        var loaderUrl = buildUrl + "/Build.loader.js";
-        var config = {
-        dataUrl: buildUrl + "/Build.data",
-        frameworkUrl: buildUrl + "/Build.framework.js",
-        codeUrl: buildUrl + "/Build.wasm",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "Jojo Dream Studio",
-        productName: "FateAdventureRPG",
-        productVersion: "1.0.0",
-        showBanner: unityShowBanner,
-      };
-        // By default Unity keeps WebGL canvas render target size matched with
-        // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-        // Set this to false if you want to decouple this synchronization from
-        // happening inside the engine, and you would instead like to size up
-        // the canvas DOM size and WebGL render target sizes yourself.
-        // config.matchWebGLToCanvasSize = false;
-        /*      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                container.className = "unity-mobile";
-                // Avoid draining fillrate performance on mobile devices,
-                // and default/override low DPI mode on mobile browsers.
-                config.devicePixelRatio = 1;
-                unityShowBanner('WebGL builds are not supported on mobile devices.');
-              } else {
-                canvas.style.width = "1280px";
-                canvas.style.height = "720px";
-              }
-        */
         const progressbar = document.querySelector(".progress");
-/*
-        progressbar.addEventListener("click", () => {
-          const value = Math.floor(Math.random() * 100);
-          progressbar.style.setProperty("--progress", `${value}%`);
-        });*/
 
-        loadingBar.style.display = "block";
-        var script = document.createElement("script");
-        script.src = loaderUrl;
-        script.onload = () => {
-          createUnityInstance(canvas, config, (progress) => {
-            //progressBarFull.style.width = 100 * progress + "%";
-            
-            //console.log(progress);
-            const value = Math.floor(progress * 100);
-            progressbar.style.setProperty("--progress", `${value}%`);
-            }).then((unityInstance) => {
-              window.unityInstance = unityInstance;
-              loadingBar.style.display = "none";
-              setTimeout(switchToFantom, 3127);
-              
-              //showInstallPrompt(); // Add this line to show the install prompt
-              
-            }).catch((message) => {
-              alert(message);
+        // Ensure progressValue is defined or set a default
+        const progressValue = 0; // You can initialize this as needed
+        progressbar.style.setProperty("--progress", `${progressValue}%`);
+
+        // Wrap everything in an async IIFE to await chunk loading
+        (async () => {
+          // Show loading bar
+          loadingBar.style.display = "block";
+
+          // Attempt to detect if Build/build.data exists
+          let combinedDataUrl = null;
+          let buildUrl = "Build";
+          let buildDataUrl = buildUrl + "/build.data"; // the big combined file
+
+          try {
+            // Try a HEAD request to see if build.data is present
+            let response = await fetch(buildDataUrl, {
+              method: "HEAD",
+              cache: "no-store"
             });
-        };
-        document.body.appendChild(script);
 
+            if (response.ok) {
+              // If build.data is found, skip chunking
+              console.log("build.data found, skipping chunking...");
+              combinedDataUrl = buildDataUrl;
+            } else {
+              // If HEAD fails (404, etc.), do chunking
+              console.log("build.data not found, proceeding with chunking...");
+              const chunkUrls = [
+                "Build/build.data.01",
+                "Build/build.data.02",
+                "Build/build.data.03",
+                "Build/build.data.04",
+                "Build/build.data.05",
+                "Build/build.data.06",
+                "Build/build.data.07",
+                "Build/build.data.08",
+                "Build/build.data.09",
+                "Build/build.data.10",
+                "Build/build.data.11",
+                "Build/build.data.12",
+                "Build/build.data.13",
+                "Build/build.data.14",
+                "Build/build.data.15",
+                "Build/build.data.16",
+                "Build/build.data.17",
+                "Build/build.data.18",
+                "Build/build.data.19"
+              ];
+              combinedDataUrl = await loadAndCombineChunks(chunkUrls);
+            }
+          } catch (error) {
+            // If fetch threw an error, assume build.data doesn't exist
+            console.error("Error checking build.data, proceeding with chunking:", error);
+            const chunkUrls = [
+              "Build/build.data.01",
+              "Build/build.data.02",
+              "Build/build.data.03",
+              "Build/build.data.04",
+              "Build/build.data.05",
+              "Build/build.data.06",
+              "Build/build.data.07",
+              "Build/build.data.08",
+              "Build/build.data.09",
+              "Build/build.data.10",
+              "Build/build.data.11",
+              "Build/build.data.12",
+              "Build/build.data.13",
+              "Build/build.data.14",
+              "Build/build.data.15",
+              "Build/build.data.16",
+              "Build/build.data.17",
+              "Build/build.data.18",
+              "Build/build.data.19"
+            ];
+            combinedDataUrl = await loadAndCombineChunks(chunkUrls);
+          }
 
+          console.log("Final data URL for createUnityInstance:", combinedDataUrl);
 
+          // Show a banner for warnings/errors
+          function unityShowBanner(msg, type) {
+            function updateBannerVisibility() {
+              warningBanner.style.display = warningBanner.children.length
+                ? "block"
+                : "none";
+            }
 
+            var div = document.createElement("div");
+            div.innerHTML = msg;
+            warningBanner.appendChild(div);
 
+            if (type == "error") {
+              div.style = "background: red; padding: 10px;";
+            } else {
+              if (type == "warning") {
+                div.style = "background: yellow; padding: 10px;";
+              }
+              setTimeout(function () {
+                warningBanner.removeChild(div);
+                updateBannerVisibility();
+              }, 5000);
+            }
+            updateBannerVisibility();
+          }
 
+          var loaderUrl = buildUrl + "/Build.loader.js";
 
+          var config = {
+            dataUrl: combinedDataUrl,
+            frameworkUrl: buildUrl + "/Build.framework.js",
+            codeUrl: buildUrl + "/Build.wasm",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "Jojo Dream Studio",
+            productName: "FateAdventureRPG",
+            productVersion: "1.0.0",
+            showBanner: unityShowBanner
+          };
 
+          var script = document.createElement("script");
+          script.src = loaderUrl;
 
+          script.onload = () => {
+            createUnityInstance(canvas, config, (progress) => {
+              // Optionally track progress here if needed
+              // const value = Math.floor(progress * 100);
+              // progressbar.style.setProperty("--progress", `${value}%`);
+            })
+              .then((unityInstance) => {
+                window.unityInstance = unityInstance;
+                loadingBar.style.display = "none";
+                //setTimeout(switchToFantom, 3127);
+              })
+              .catch((message) => {
+                alert(message);
+              });
+          };
 
-
-
-        }
+          document.body.appendChild(script);
+        })(); // end of async block
+      }
     </script>
 
     <script>
-      
-      // Connect to the Web3 provider
-      //const web3 = new Web3('https://rpc.ankr.com/fantom');
-      //const web3 = new Web3('https://rpcapi.sonic.fantom.network/');
+      let deferredPrompt;
 
-
-      // Retrieve the current gas price
-      /*
-      window.getAggressiveGasPrice = async function() {
-      try {
-        // Retrieve the current gas price
-        const gasPrice = await web3.eth.getGasPrice();
-        // Convert the gas price to BigInt
-        const gasPriceBigInt = BigInt(gasPrice);
-        // Adjust the gas price by multiplying with a factor (e.g., 2 for 100% increase)
-        const aggressiveGasPrice = gasPriceBigInt * BigInt(15) / BigInt(10); // Multiplies by 1.5 as an example
-        // Convert the gas price to Gwei or other units if desired
-        const aggressiveGasPriceGwei = web3.utils.fromWei(aggressiveGasPrice.toString(), 'gwei');
-        
-        window.unityInstance.SendMessage("Web3Manager", "UpdateGasPrice", aggressiveGasPrice.toString());
-        return aggressiveGasPrice.toString(); // Return the aggressive gas price
-      } catch (error) {
-        console.error('Error:', error);
-        throw error; // Throw the error
-      }
-    };
-    let zzz = window.getAggressiveGasPrice();
-    
- */ 
-  </script>
-
-<script>
-  let deferredPrompt;
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-  });
-
-  function showInstallPrompt() {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-          
-          canvas.style.display = 'block'; // Hide the canvas
-        } else {
-          
-          canvas.style.display = 'block'; // Hide the canvas
-        }
-        deferredPrompt = null;
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
       });
-    }
-  }
-  
 
-
-
-
-
-//-----------------------------version checking-------------------------------------------------
-
-async function checkForUpdate() {
-  try {
-    const currentVersion = await getCachedVersion(); // Get the version from the cache
-    const latestVersion = await fetchLatestVersion(); // Fetch the latest version from the server
-
-    
-    
-
-    // Compare versions, refresh if a new version is detected
-    if (latestVersion && currentVersion && currentVersion !== latestVersion) {
-      
-
-      // Unregister all service workers
-      if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (let registration of registrations) {
-          
-          await registration.unregister(); // Unregister old service worker
+      function showInstallPrompt() {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === "accepted") {
+              canvas.style.display = "block"; // Hide the canvas
+            } else {
+              canvas.style.display = "block"; // Hide the canvas
+            }
+            deferredPrompt = null;
+          });
         }
       }
 
-      // Clear all caches
-      const cacheNames = await caches.keys();
-      await Promise.all(
-        cacheNames.map((cacheName) => {
-          
-          return caches.delete(cacheName); // Delete each cache
-        })
-      );
-
-      // Reload page to register the new service worker and fetch fresh content
-      
-      window.location.reload(true);
-      window.location.href = window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'cache-bust=' + new Date().getTime();
-    }
-  } catch (error) {
-    console.error('Error during version check:', error);
-  }
-}
-
-
-
-  // Function to fetch the latest version.json from the server
-  async function fetchLatestVersion() {
-    try {
-      const response = await fetch('/version.json', { cache: 'no-store' });
-      const data = await response.json();
-      return data.version;
-    } catch (error) {
-      console.error('Error fetching latest version:', error);
-      return null;
-    }
-  }
-
-  // Function to get the version cached by the service worker
-
-  async function getCachedVersion() {
-  try {
-    const CACHE_NAME = 'fa-rpg-cache-v1'; // Ensure the same cache name is used here too!
-
-    const cache = await caches.open(CACHE_NAME); // Open the cache
     
-    const cachedResponse = await cache.match('/version.json'); // Look for version.json in cache
-
-    if (cachedResponse) {
-      const data = await cachedResponse.json();
-       // Log the content of version.json
-      return data.version; // Return the version key
-    } else {
-      console.warn('version.json not found in cache'); // Warn if not found in cache
-      return null;
-    }
-  } catch (error) {
-    console.error('Error fetching cached version:', error);
-    return null;
-  }
-}
-
-  // Call this function periodically or on page load to check for updates
-  setInterval(checkForUpdate, 600000); // Check every 60 minute
-  // Delay the execution of checkForUpdate by 3 seconds after the page is loaded
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      checkForUpdate();
-    }, 5000); // 3000 milliseconds = 3 seconds
-  });
-
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(registration => {
-          
-        })
-        .catch(error => {
-          
-        });
-    });
-  }
-//----------------------------------------------------------------------
-     
-  </script>
-
-
-
+    </script>
+  </body>
 </html>

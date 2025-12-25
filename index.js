@@ -1,19 +1,34 @@
 
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { getAuth, signInWithPopup, signOut, GoogleAuthProvider, OAuthProvider  } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+import { getFirestore, collection, serverTimestamp, addDoc, setDoc, getDoc, doc    } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+
+
+
 var providerNEW;
 var signerNEW;
 var userAccountNEW;
 var AAornot;
-const MasterChainID = 64165; //250 is Fantom Mainnet, 64165
+const MasterChainID = 146;//57054;//146main;//57054 blaze; //250 is Fantom Mainnet, 64165
 
- const call_type = {
+const call_type = {
   CONNECT: 1,
   SEND_CONTRACT: 2,
   FULL_SCREEN: 3,
   NEW_ACCOUNT: 4,
   CONNECT_AA: 5,
   GET_BALANCE: 6,
-  INSTALL_PROMPT: 7
+  INSTALL_PROMPT: 7,
+  GOOGLE_SIGNIN: 8 ,
+  GOOGLE_SAVE_INFO: 9 ,
+  GOOGLE_SIGNOUT: 10 ,
+  CONNECT_PERSONAL_WALLET: 11, 
+  TOGGLE_SEND_CONTRACT_AA : 12,
+  REFRESH_PAGE : 13,
+  ON_UNITY_LOADED : 14,
+  OPEN_DEBRIDGE_WIDGET: 15 // A new type for opening the widget
 };
 
 const response_type = {
@@ -28,82 +43,129 @@ const response_type = {
   KEY: 9,
   RECOVERY: 10,
   BALANCE: 11,
-  AA_CONNECTED: 12
+  AA_CONNECTED: 12,
+
+  GOOGLE_SIGNUP: 13,
+  GOOGLE_DONE_SAVE_INFO: 14,
+
+  GOOGLE_SIGNIN: 15,
+  GOOGLE_CANCEL: 16,
+  
+  GOOGLE_SIGNOUT_DONE: 17 ,
+  GOOGLE_IS_SIGNIN : 18,
+  PERSONAL_WALLET_ADDRESS : 19 ,
+  GET_SEND_CONTRACT_AA : 20
 };
 
 var GLOBALWALLETADDRESS;
 
 
-// document.getElementById('btn-connectwallet').addEventListener("click", function(event) {
-//   ConnectWallet()
-// }, {once: false});
-
-// const web3 = new Web3(Web3.givenProvider) ;
-// const from = await web3.eth.getAccounts();
 /* ORIGINAL CONNECT WALLET WEB3*/ 
-async function ConnectWallet(){
-  
+async function ConnectWallet() {
+  if (!window.ethereum) {
+    alert('A personal wallet like MetaMask or Rabby is required to continue. Please install one to proceed.');
+    //return;
+  }
 
-  if (window.ethereum == null) {
-
-    // If MetaMask is not installed, we use the default provider,
-    // which is backed by a variety of third-party services (such
-    // as INFURA). They do not have private keys installed so are
-    // only have read-only access
-    
-    //provider = ethers.getDefaultProvider()
-    //providerNEW = new ethers.JsonRpcProvider('https://rpcapi.sonic.fantom.network/');
-
-  } else {
-
-    // Connect to the MetaMask EIP-1193 object. This is a standard
-    // protocol that allows Ethers access to make all read-only
-    // requests through MetaMask.
-    providerNEW = new ethers.BrowserProvider(window.ethereum)
-    
-    const network = await providerNEW.getNetwork();
-    var chainId = network.chainId;
-    // Convert chainId to a number before comparison
-    chainId = parseInt(chainId, 10);
-    
-
-    // Check if chain ID is not 250
-    if (chainId !== MasterChainID) {
-      switchToFantom();
-      alert("Switch to Fantom Network before Connecting."); // Display alert pop-up
-      return;
+  // If multiple wallets are injected (e.g. Rabby + Metamask), prefer Rabby if detected:
+  let chosenProvider = window.ethereum;
+  if (window.ethereum.providers && window.ethereum.providers.length) {
+    const rabbyProvider = window.ethereum.providers.find(p => p.isRabby);
+    if (rabbyProvider) {
+      chosenProvider = rabbyProvider;
     }
-    // It also provides an opportunity to request access to write
-    // operations, which will be performed by the private key
-    // that MetaMask manages for the user.
-    signerNEW = await providerNEW.getSigner();
-  } 
+  }
+  console.log("--connect--");
+  console.log(chosenProvider);
+  console.log("--end--");
+  providerNEW = new ethers.BrowserProvider(chosenProvider);
+  const network = await providerNEW.getNetwork();
+  let chainId = parseInt(network.chainId, 10);
+
+  if (chainId !== MasterChainID) {
+    switchToFantom();
+    alert("Switch to Sonic Network before Connecting.");
+    return;
+  }
+
+  signerNEW = await providerNEW.getSigner();
 
   try {
-    await window.ethereum.request({ method: 'eth_requestAccounts' });
+    await chosenProvider.request({ method: 'eth_requestAccounts' });
   } catch (error) {
     if (error.code === 4001) {
       window.location.href = 'ethereum:';
-    } else {
-      
+      return;
     }
   }
 
   userAccountNEW = await signerNEW.getAddress();
-
-  
-
-  
-
   AAornot = false;
   GLOBALWALLETADDRESS = userAccountNEW;
+
   sendBalanceinfo();
   response(response_type.ACCOUNT_NUMBER, userAccountNEW);
-  
 }
 
 
 
+async function ConnectPersonalWallet() {
+  if (!window.ethereum) {
+    alert('A personal wallet like MetaMask or Rabby is required to continue. Please install one to proceed.');
+    //return;
+  }
+
+  // If multiple wallets are injected (e.g., Rabby + MetaMask), pick Rabby if available:
+  let chosenProvider = window.ethereum;
+  if (window.ethereum.providers && window.ethereum.providers.length) {
+    const rabbyProvider = window.ethereum.providers.find(p => p.isRabby);
+    if (rabbyProvider) {
+      chosenProvider = rabbyProvider;
+    }
+  }
+  console.log("--connect--");
+  console.log(chosenProvider);
+  console.log("--end--");
+  providerNEW = new ethers.BrowserProvider(chosenProvider);
+  const network = await providerNEW.getNetwork();
+  let chainId = parseInt(network.chainId, 10);
+
+  if (chainId !== MasterChainID) {
+    switchToFantom();
+    alert("Switch to Sonic Network before Connecting.");
+    return;
+  }
+
+  signerNEW = await providerNEW.getSigner();
+
+  try {
+    await chosenProvider.request({ method: 'eth_requestAccounts' });
+  } catch (error) {
+    if (error.code === 4001) {
+      window.location.href = 'ethereum:';
+      return;
+    }
+  }
+
+  userAccountNEW = await signerNEW.getAddress();
+  AAornot = false;  // use regular wallet
+  GLOBALWALLETADDRESS = userAccountNEW;
+
+  sendBalanceinfo();
+  response(response_type.PERSONAL_WALLET_ADDRESS, userAccountNEW);
+}
+
+
+async function ToggleAAornot() { //true = using AA, false = using Metamask/Rabby
+  AAornot = !AAornot;
+  response(response_type.GET_SEND_CONTRACT_AA, AAornot);
+}
+
+async function RefreshF5() { //true = using AA, false = using Metamask/Rabby
+  // This reloads the current page.
+  window.location.reload();
+
+}
 
 
 
@@ -117,6 +179,8 @@ function CreateWeb2Wallet(){
   const wallet = ethers.Wallet.createRandom();
   AA_privateKey = wallet.privateKey;
   AA_recipient = wallet.address;
+  //console.log(AA_recipient);
+  //console.log(AA_privateKey);
   
   
   
@@ -124,39 +188,32 @@ function CreateWeb2Wallet(){
 
 
 // Step 1: Define your RPC URL and Chain ID
-const AA_rpcUrl = 'https://rpc.testnet.soniclabs.com';
-const AA_chainId = 64165;
+const AA_rpcUrl = 'https://rpc.soniclabs.com';//'https://rpc.testnet.soniclabs.com';
+//const AA_rpcUrl = 'https://rpc.blaze.soniclabs.com';
+const AA_chainId = MasterChainID;//146;//57054;//64165;
 
 // Step 2: Define the provider with the custom RPC
 const AA_provider = new ethers.JsonRpcProvider(AA_rpcUrl, {
-  name: 'soniclabs-testnet',
+  name: 'Sonic',
   chainId: AA_chainId,
 });
 
-// Step 3: Create or restore a wallet
-// If you want to create a new wallet, uncomment the following line
-// const AA_wallet = ethers.Wallet.createRandom();
-
-// If you want to use an existing wallet with a private key:
-//const AA_privateKey = '0xbec809822ba49af479831ae939f98280b5e8fd5c0d737099d484b447c94f5055';
-//const AA_recipient = '0x879CbB5C20506671F22D9085BC09b11b14E5Fa01'; // Replace with recipient address
-
-//const AA_privateKey = '0x9bd104d9735138271e084ae34c596bd82ff40bc5ac637b998bb81efb0e79294d';
-//const AA_recipient = '0xd1F555ba3b88A8eA0Cc0066119eFb47d98E32Ff7'; // Replace with recipient address
-
-//MASTER CONTRACT --- use this and will create several new one to rotate
-//**** store these faucet information in UNITY, pass it with key arg */
 
 
 var AA_wallet;
 
 
 async function getSBalance(walletAddress) {
+  
   const balanceInWei = await AA_provider.getBalance(walletAddress);
   const balanceInEth = ethers.formatEther(balanceInWei);
+  // Format balance to 3 decimal places
+  const balanceInEthRounded = String(parseFloat(balanceInEth).toFixed(3));
+  console.log(balanceInEthRounded);
+
+  // Log and respond with the balance
+  response(response_type.BALANCE, balanceInEthRounded);
   
-  
-  response(response_type.BALANCE, balanceInEth);
 }
 
 async function sendBalanceinfo() {
@@ -168,20 +225,27 @@ async function sendBalanceinfo() {
     }
 
     // Fetch the balance and convert it to ETH
+    console.log(GLOBALWALLETADDRESS);
+    console.log(AA_provider);
     const balanceInWei = await AA_provider.getBalance(GLOBALWALLETADDRESS);
+    console.log(balanceInWei);
     const balanceInEth = ethers.formatEther(balanceInWei);
+    console.log(balanceInEth);
+
+    // Format balance to 3 decimal places
+    const balanceInEthRounded = String(parseFloat(balanceInEth).toFixed(3));
+    console.log(balanceInEthRounded);
 
     // Log and respond with the balance
-    
-    response(response_type.BALANCE, balanceInEth);
+    response(response_type.BALANCE, balanceInEthRounded);
     
   } catch (error) {
     // Handle any errors
     console.error("Error fetching balance: ", error);
   }
 }
-// Run the function every 21 seconds (21000 ms)
-setInterval(sendBalanceinfo, 21000);
+// Run the function every 8.13 seconds (8130 ms)
+setInterval(sendBalanceinfo, 8130);
 
 
 
@@ -209,7 +273,7 @@ async function CreateAndConnectWeb2Wallet(fkey,pass){
   
   const faucet_master = new ethers.Wallet(fkey, AA_provider);
   
-  const faucetContractAddress = '0xDCF9127a59169d889b1beC8e8148Dcc3DB66f994';
+  const faucetContractAddress = '0xEB5bCD3f18f33935b93C3F0Ac9b9d359482568cc';
   const faucetABI = [
     {
       "inputs": [
@@ -235,8 +299,9 @@ async function CreateAndConnectWeb2Wallet(fkey,pass){
 
   try {
     // Call the distributeFaucet function
-    const tx = await faucetContract.distributeFaucet(AA_recipient,pass);
-    
+    //const tx = await faucetContract.distributeFaucet(AA_recipient,pass);
+    const tx = await faucetContract.distributeFaucet(AA_recipient, pass, { gasLimit: 120000 });
+
     
     // Wait for the transaction to be mined
     const receipt = await tx.wait();
@@ -259,7 +324,7 @@ async function CreateAndConnectWeb2Wallet(fkey,pass){
     // Check if chain ID is not 250
     if (chainId !== MasterChainID) {
       switchToFantom();
-      alert("Switch to Fantom Network before Connecting."); // Display alert pop-up
+      alert("Switch to Sonic Network before Connecting."); // Display alert pop-up
       return;
     }
 
@@ -310,7 +375,7 @@ async function ConnectAAWallet(aawalletaddress, aakey){
   // Check if chain ID is not 250
   if (chainId !== MasterChainID) {
     switchToFantom();
-    alert("Switch to Fantom Network before Connecting."); // Display alert pop-up
+    alert("Switch to Sonic Network before Connecting."); // Display alert pop-up
     return;
   }
 
@@ -354,8 +419,8 @@ function EnterFullScreen(){
 function JsCallFunction(type, arg_string){
   
   
-  
 
+  console.log(`JsCallFunction type=${type}`);
 
   if(type == call_type.CONNECT){    
     ConnectWallet();  
@@ -440,6 +505,72 @@ function JsCallFunction(type, arg_string){
       //install prompt
   }
 
+  else if (type == call_type.GOOGLE_SIGNIN){
+    
+    SignInGoogle();
+  }
+
+  else if (type == call_type.GOOGLE_SAVE_INFO){
+    console.log("type == call_type.GOOGLE_SAVE_INFO");
+
+    const splited_text = arg_string.split("_%_");
+    
+    GoogleSaveInfo(splited_text);
+
+  }
+  else if (type == call_type.GOOGLE_SIGNOUT){
+    
+    SignOutGoogle();
+  }
+  
+  else if (type == call_type.CONNECT_PERSONAL_WALLET){
+    ConnectPersonalWallet();
+  }
+  
+  else if (type == call_type.TOGGLE_SEND_CONTRACT_AA){
+    
+    ToggleAAornot();
+  }
+
+  else if (type == call_type.REFRESH_PAGE){
+    
+    RefreshF5();
+  }
+
+  else if (type == call_type.ON_UNITY_LOADED){
+    //switching between 146 or 57054
+    OnUnityLoaded();
+    if (MasterChainID == 57054){
+      response(response_type.UPDATE, "1_%%_0");
+      console.log("TESTNET MODDDD");
+    } else {
+      response(response_type.UPDATE, "1_%%_1");
+    }
+    console.log("Mainnet Mode");
+    
+  }
+  else if (type == call_type.OPEN_DEBRIDGE_WIDGET) {
+      const fromSymbol = arg_string; // arg_string directly holds the symbol
+      openDeBridgeWidget(fromSymbol);
+      console.log(`DeBridge widget opened via Unity for symbol: ${fromSymbol}`);
+      /*   // treat these as Ethereum
+        ETH: 1,
+        ETHEREUM: 1,
+        HYPERLIQUID: 1,
+        OTHERS: 1,
+
+        // EVM chains
+        BNB: 56,
+        POLYGON: 137,
+        ARBITRUM: 42161,
+        AVAX: 43114,
+        LINEA: 59144,
+        OPTIMISM: 10,
+        BASE: 8453,
+
+        // non EVM
+        SOL: 7565164 */
+  }
 
 }
 window.JsCallFunction = JsCallFunction;
@@ -488,26 +619,6 @@ async function JsGetFunction(type, arg_string){
 }
 window.JsGetFunction = JsGetFunction;
 
-//////////// WEB3 1.3.6 version of readcontract //////////////
-/*
-async function readContract(id, method, abi, contract, args) {
-  
-  // navigator.clipboard.writeText("<ContractRead>")
-  return new Promise(async (resolve, reject) => {
-    try {
-      const from = (await web3.eth.getAccounts())[0];
-      
-      
-      const result = await new web3.eth.Contract(JSON.parse(abi), contract).methods[method](...JSON.parse(args)).call();
-      
-      resolve(result); // Resolve the Promise with the result
-    } catch (error) {
-      console.error(error);
-      reject(error); // Reject the Promise in case of an error
-    }
-  });
-}
-*/
 //--------------------------------------------------------------- -READ- ---------------------------------------------
 async function readContract(id, method, abi, contract, args) {
   // navigator.clipboard.writeText("<ContractRead>")
@@ -519,19 +630,7 @@ async function readContract(id, method, abi, contract, args) {
       
       const contracts = new ethers.Contract(contract, abi, providerNEW);
       const resulttemp = await contracts[method](...JSON.parse(args));
-      //const result = resulttemp.map(value => value.toString());
-      /*const result = {};
-      for (const key in resulttemp) {
-        result[key] = Array.from(resulttemp[key], val => val.toString());
-      }*/
 
-      //const result = JSON.stringify(resulttemp);
-      //const result = await new web3.eth.Contract(JSON.parse(abi), contract).methods[method](...JSON.parse(args)).call();
-      
-      //const result = recursivelyConvertToString(resulttemp);
-      //CHOOSE ONE to USE. the rest obsolate to reduce redundant.
-      
-      
 
       const unwraplog = unwrapProxy(resulttemp);
       
@@ -551,13 +650,45 @@ async function readContract(id, method, abi, contract, args) {
   });
 }
 //---------------------------------- SEND --------------------------------------------------------------------------------
+// --------------------------------------------------
+// Fetch & decode revert reason (works with ethers v6)
+// --------------------------------------------------
+async function getRevertReason(txHash, provider, blockNumber) {
+  const tx = await provider.getTransaction(txHash);
+
+  try {
+    // This static call will throw with the original revert data
+    await provider.call(tx, blockNumber);
+    return "Execution reverted";          // should never reach
+  } catch (err) {
+    // ethers v6 puts the raw revert data on err.data
+    const data = err.data ?? err?.error?.data;
+    if (!data || data.length < 10) return err.reason || err.message;
+
+    // Standard Solidity Error(string): 0x08c379a0 + ABI-encoded string
+    const reasonHex = "0x" + data.slice(10 + 64 * 2);      // skip selector, offset & length
+    try {
+      return ethers.toUtf8String(reasonHex);
+    } catch {
+      return err.reason || err.message || "Execution reverted";
+    }
+  }
+}
+
 async function sendContract(id, method, abi, contract, args, value, gasLimit, gasPrice) { //conventional web3 wallet send
   //////////////// NO AA //////////////////////////////////////////////////////////////
   if (AAornot == false) {
+     if (!providerNEW || !signerNEW) {
+      const errorMsg = "Personal wallet not connected. Please connect first.";
+      console.error(errorMsg);
+      response(response_type.ERROR, method + "_%%_" + errorMsg);
+      return;
+    }
     
     // Get network object
-    providerNEW = new ethers.BrowserProvider(window.ethereum);
+    //providerNEW = new ethers.BrowserProvider(window.ethereum);
     const network = await providerNEW.getNetwork();
+    
     var chainId = network.chainId;
     // Convert chainId to a number before comparison
     chainId = parseInt(chainId, 10);
@@ -566,7 +697,7 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
     // Check if chain ID is not 250
     if (chainId !== MasterChainID) {
       switchToFantom();
-      response(response_type.ERROR, method + "_%%_" + "wrong RPC, switch to Fantom Network and Retry.");
+      response(response_type.ERROR, method + "_%%_" + "wrong RPC, switch to Sonic Network and Retry.");
     } else {
       //const from = (await web3.eth.getAccounts())[0];
       const contracts = new ethers.Contract(contract, abi, providerNEW);
@@ -577,18 +708,7 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
       if (gasPrice != "") { options.gasPrice = gasPrice; }
       if (value    != "") { options.value    = value; }
 
-      
-      
-      //
-      
-      
-      
-      
-      
-      
-      
-      
-      
+           
       try {
         
         
@@ -599,6 +719,17 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
         
         response(response_type.HASH, method);
         const receipt = await getTransactionReceiptWithRetry(transaction.hash, 120);
+
+        // ----- NEW: detect on-chain revert and forward reason -----
+        if (receipt && receipt.status === 0) {
+          const reason = await getRevertReason(transaction.hash, providerNEW, receipt.blockNumber);
+
+          response(response_type.ERROR, method + "_%%_" + reason);
+          sendBalanceinfo();
+          return;                      // stop normal “success” flow
+        }
+        // ----------------------------------------------------------
+
         
         const endTime2 = new Date();
         const timeTaken2 = endTime2 - startTime;
@@ -629,10 +760,12 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
         const jsonlog = JSON.stringify(serializelog);
         
         response(response_type.RECEIPT, method + "_%%_" + JSON.stringify(serializelog));
+        sendBalanceinfo();
         return receipt;
       } catch (error) {
         console.error('Error sending transaction:', error);
         response(response_type.ERROR, method + "_%%_" + error.message);
+        sendBalanceinfo();
         //throw error; // rethrow the error to handle it at a higher level
       }
     }  
@@ -650,7 +783,7 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
     // Check if chain ID is not 250
     if (chainId !== MasterChainID) {
       switchToFantom();
-      response(response_type.ERROR, method + "_%%_" + "wrong RPC, switch to Fantom Network and Retry.");
+      response(response_type.ERROR, method + "_%%_" + "wrong RPC, switch to Sonic Network and Retry.");
     } else { 
       //const from = (await web3.eth.getAccounts())[0];
       const contracts = new ethers.Contract(contract, abi, providerNEW);
@@ -683,6 +816,16 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
         
         response(response_type.HASH, method);
         const receipt = await getTransactionReceiptWithRetry(transaction.hash, 120);
+
+        // ----- NEW: detect on-chain revert and forward reason -----
+        if (receipt && receipt.status === 0) {
+          const reason = await getRevertReason(transaction.hash, providerNEW, receipt.blockNumber);
+
+          response(response_type.ERROR, method + "_%%_" + reason);
+          sendBalanceinfo();
+          return;                      // stop normal “success” flow
+        }
+        // ----------------------------------------------------------
         
         const endTime2 = new Date();
         const timeTaken2 = endTime2 - startTime;
@@ -713,10 +856,12 @@ async function sendContract(id, method, abi, contract, args, value, gasLimit, ga
         const jsonlog = JSON.stringify(serializelog);
         
         response(response_type.RECEIPT, method + "_%%_" + JSON.stringify(serializelog));
+        sendBalanceinfo();
         return receipt;
       } catch (error) {
         console.error('Error sending transaction:', error);
         response(response_type.ERROR, method + "_%%_" + error.message);
+        sendBalanceinfo();
         //throw error; // rethrow the error to handle it at a higher level
       }
       sendBalanceinfo();
@@ -737,7 +882,7 @@ async function sendContractAA(id, method, abi, contract, args, value, gasLimit, 
   // Check if chain ID is not 250
   if (chainId !== MasterChainID) {
     switchToFantom();
-    response(response_type.ERROR, method + "_%%_" + "wrong RPC, switch to Fantom Network and Retry.");
+    response(response_type.ERROR, method + "_%%_" + "wrong RPC, switch to Sonic Network and Retry.");
   } else { 
     //const from = (await web3.eth.getAccounts())[0];
     const contracts = new ethers.Contract(contract, abi, providerNEW);
@@ -753,13 +898,6 @@ async function sendContractAA(id, method, abi, contract, args, value, gasLimit, 
     //
     
     
-    
-    
-    
-    
-    
-    
-    
     try {
       
       
@@ -770,6 +908,16 @@ async function sendContractAA(id, method, abi, contract, args, value, gasLimit, 
       
       response(response_type.HASH, method);
       const receipt = await getTransactionReceiptWithRetry(transaction.hash, 120);
+
+      // ----- NEW: detect on-chain revert and forward reason -----
+        if (receipt && receipt.status === 0) {
+          const reason = await getRevertReason(transaction.hash, providerNEW, receipt.blockNumber);
+
+          response(response_type.ERROR, method + "_%%_" + reason);
+          sendBalanceinfo();
+          return;                      // stop normal “success” flow
+        }
+        // ----------------------------------------------------------
       
       const endTime2 = new Date();
       const timeTaken2 = endTime2 - startTime;
@@ -818,7 +966,7 @@ function delay(ms) {
 async function getTransactionReceiptWithRetry(txHash, maxRetries) {
   let retries = 0;
   let txReceipt = null;
-  await delay(800); // Wait for 0.5 seconds before retrying
+  await delay(100); // Wait for 0.5 seconds before retrying
   while (retries < maxRetries) {
     await delay(450); // Wait for 0.5 seconds before retrying
     txReceipt = await providerNEW.getTransactionReceipt(txHash);
@@ -892,31 +1040,7 @@ async function response(respondType, message){
 
 window.getAggressiveGasPrice = async function() {
   try {
-    /*
-    // Retrieve the current gas price
-    const gasPrice = await web3.eth.getGasPrice();
-
-    // Convert the gas price to BigInt
-    const gasPriceBigInt = BigInt(gasPrice);
-
-    // Adjust the gas price by multiplying with a factor (e.g., 2 for 100% increase)
-    const aggressiveGasPrice = gasPriceBigInt * BigInt(15) / BigInt(10); // Multiplies by 1.5 as an example
-
-    // Convert the gas price to Gwei or other units if desired
-    const aggressiveGasPriceGwei = web3.utils.fromWei(aggressiveGasPrice.toString(), 'gwei');
-
-    
-    window.unityInstance.SendMessage("Web3Manager", "UpdateGasPrice", aggressiveGasPrice.toString());
-    return aggressiveGasPrice.toString(); // Return the aggressive gas price
-    */
-
-    //const contract = new ethers.Contract(contractAddress, contractABI, providerNEW);
-		//const contractWithSigner = contract.connect(signerNEW);
-    //const startTime3 = new Date();
-      //const gasEstimate = await contractWithSigner.BattlePet.estimateGas('0', '3');
-      //
-      // Get current gas price
-      
+  
       const feeData = await providerNEW.getFeeData();
       const bignumgas = feeData.gasPrice * BigInt(15) / BigInt(10);
       //const gasPrice = numbergas.toString();
@@ -932,20 +1056,6 @@ window.getAggressiveGasPrice = async function() {
 
 
 
-
-//const { ethers, providers } = require('ethers');
-/*
-const fantomChain = {
-  chainId: "0x190",
-  chainName: "Fantom Opera",
-  rpcUrls: ["https://rpc.ankr.com/fantom/"],
-  nativeCurrency: {
-    symbol: "FTM",
-    decimals: 18,
-  },
-  blockExplorerUrls: ["https://ftmscan.com/"],
-};
-*/
 async function switchToFantom() {
   const hexValue = "0x" + MasterChainID.toString(16);
   try{
@@ -968,20 +1078,9 @@ async function switchToFantom() {
   }
  }
 
-// Call the connectToFantom function to connect to the Fantom chain
-//connectToFantom();
+// Expose the function globally since index.js becomes the module
+//window.switchToFantom = switchToFantom;
 
-/*
-// Get a reference to the button element
-const rotateButton = document.getElementById("unity-rotate-button");
-
-// Add a click event listener to the button
-rotateButton.addEventListener("click", function() {
-  // Call the rotateCanvas function here
-  rotateCanvas();
-   // Optional for debugging
-});
-*/
 var isHorizontal = true;
 function rotateCanvas() {
   
@@ -994,15 +1093,6 @@ function rotateCanvas() {
   
   response(response_type.ROTATE, isHorizontal);
 }
-
-//---------------Install Prompt -------------------------
-/*window.addEventListener('load', () => {
-  setTimeout(() => {
-    
-    hideCanvasAndShowPrompt(); // Call the function to show the install prompt
-  }, 5000); // 5000 milliseconds = 5 seconds
-});
-*/
 
 
 // Function to hide the canvas and show the modal with install prompt
@@ -1048,5 +1138,246 @@ function hideCanvasAndShowPrompt() {
   // Append the modal to the body
   document.body.appendChild(modal);
 }
+// --------------- DeBridge ---------------
+const CHAIN_ID_BY_SYMBOL = {
+  // treat these as Ethereum
+  ETH: 1,
+  ETHEREUM: 1,
+  HYPERLIQUID: 1,
+  OTHERS: 1,
 
+  // EVM chains
+  BNB: 56,
+  POLYGON: 137,
+  ARBITRUM: 42161,
+  AVAX: 43114,
+  LINEA: 59144,
+  OPTIMISM: 10,
+  BASE: 8453,
+
+  // non EVM
+  SOL: 7565164
+};
+
+// optional alias normalizer, keeps your calls flexible
+function normalizeSymbol(s) {
+  const k = String(s || '').trim().toUpperCase();
+  if (!k) return 'ETH';
+  if (k === 'MATIC') return 'POLYGON';
+  if (k === 'AVALANCHE') return 'AVAX';
+  if (k === 'HL' || k === 'HYPER') return 'HYPERLIQUID';
+  if (k === 'OTHER' || k === 'DEFAULT') return 'OTHERS';
+  return k;
+}
+
+function openDeBridgeWidget(fromSymbol) {
+  const widgetIframe = document.getElementById('debridge-widget-iframe');
+  const widgetContainer = document.getElementById('debridge-widget-container');
+
+  const symbol = normalizeSymbol(fromSymbol);
+  const inputChain = CHAIN_ID_BY_SYMBOL[symbol] || 1; // default to ETH
+  const recipient = GLOBALWALLETADDRESS || '<Your Sonic EVM Address 0x....>';
+
+  const base = new URL('https://app.debridge.finance/deswap');
+  base.searchParams.set('outputChain', '146'); // Sonic
+  if (inputChain) base.searchParams.set('inputChain', String(inputChain));
+
+  const withAddress = new URL(base.toString());
+  withAddress.searchParams.set('address', String(recipient));
+
+  widgetContainer.style.display = 'block';
+
+  if (symbol === 'SOL') {
+    let step = 0;
+    const onload = () => {
+      step++;
+      
+     widgetIframe.removeEventListener('load', onload);
+      
+    };
+    widgetIframe.addEventListener('load', onload);
+    widgetIframe.src = base.toString();
+  } else {
+    widgetIframe.src = withAddress.toString();
+  }
+}
+
+window.openDeBridgeWidget = openDeBridgeWidget;
+// Example usage:
+// openDeBridgeWidget('0xYourSonicAddress', 'SOL');
+// openDeBridgeWidget('0xYourSonicAddress', 'AVAX');
+// openDeBridgeWidget('0xYourSonicAddress', 'ETH');
+
+
+function closeDeBridgeWidget() {
+    const widgetContainer = document.getElementById('debridge-widget-container');
+    widgetContainer.style.display = 'none';
+
+    const widgetIframe = document.getElementById('debridge-widget-iframe');
+    widgetIframe.src = "";
+}
+
+
+window.closeDeBridgeWidget = closeDeBridgeWidget;
+
+document.addEventListener('keydown', (event) => {
+    if (event.key.toLowerCase() === 'p') {
+        const recipient = GLOBALWALLETADDRESS || '0xYourPlaceholderWalletAddressHereIfNoneIsConnectedYet';
+        console.log("P key pressed. Attempting to open DeBridge Widget for:", recipient);
+        window.openDeBridgeWidget("SOL");
+    }
+});
+document.addEventListener('keydown', (event) => {
+    if (event.key.toLowerCase() === 'l') {
+        const recipient = GLOBALWALLETADDRESS || '0xYourPlaceholderWalletAddressHereIfNoneIsConnectedYet';
+        console.log("P key pressed. Attempting to open DeBridge Widget for:", recipient);
+        window.openDeBridgeWidget("AVAX");
+    }
+});
+
+// ----------- Firebase -----------
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAs3pIEa8BGUS9Pvn_tJAP-Fyl7VhQ1xzI",
+  authDomain: "fateadventurerpg.firebaseapp.com",
+  projectId: "fateadventurerpg",
+  storageBucket: "fateadventurerpg.firebasestorage.app",
+  messagingSenderId: "615879410047",
+  appId: "1:615879410047:web:a107d100725c7dd6a35a4a",
+  measurementId: "G-SX3RLKSVKD"
+};
+
+const app = initializeApp(firebaseConfig); 
+const auth = getAuth(app); 
+const db = getFirestore(app);
+const google_provider = new GoogleAuthProvider();
+
+async function SignInGoogle(){
+  console.log("[____] SignInGoogle()");
+
+  if (auth.currentUser)
+  {
+    console.log("[____] Had ald Login():", auth.currentUser.uid);
+    GetUserInfo(auth.currentUser);
+  }
+  else{
+    try {
+
+      await signInWithPopup(auth, google_provider);
+  
+      console.log("[____] signInWithPopup() done");
+      
+      console.log("[____] user:", auth.currentUser);
+      console.log("[____] user.uid:", auth.currentUser.uid);
+      if (auth.currentUser) {
+        GetUserInfo(auth.currentUser);
+      } 
+      else{
+        response(response_type.GOOGLE_CANCEL);
+      }
+    } catch (error) {
+      response(response_type.GOOGLE_CANCEL);
+    }
+    
+  }
+}
+
+async function SignOutGoogle() {
+  console.log("[____] SignOutGoogle()")
+  signOut(auth);
+  console.log("[____] Signed Out")
+  response(response_type.GOOGLE_SIGNOUT_DONE)
+  
+  console.log("[____] Signed Out Done")
+}
+
+async function GoogleSaveInfo(splited_text){
+
+  console.log("[____] GoogleSaveInfo() splited_text=", splited_text);
+
+  try {
+    const user = auth.currentUser;
+    const docRef = await doc(db, "users", user.uid)
+    const user_data = 
+      {
+        version          : splited_text[0],
+        randomKey        : splited_text[1],
+        encodeAddress1   : splited_text[2],
+        encodeAddress2   : splited_text[3],
+        encodeKey1       : splited_text[4],
+        encodeKey2       : splited_text[5],
+        encoded_mnemonic : splited_text[6],
+      }
+
+    await setDoc(docRef, user_data );
+
+    console.log("[____] Document written");
+
+    response(response_type.GOOGLE_DONE_SAVE_INFO);
+  } catch (error) {
+    console.error("[____] Error adding document: ", error);
+  }
+}
+
+async function GetUserInfo(user) {
+  console.log("[____] GetUserInfo()");
+  try {
+    const docRef = await doc(db, "users", user.uid)
+    const userInfo = await getDoc(docRef );
+
+    console.log("[____] Document Data exists:", userInfo.exists());
+
+    if (userInfo.exists()){
+      console.log("[____] Logging in Document Data:", userInfo.data());
+
+
+      const data = userInfo.data();
+      const combinedRespond = data['version'] + "_%%_" +
+                              data['randomKey'] + "_%%_" +
+                              data['encodeAddress1'] + "_%%_" +
+                              data['encodeAddress2'] + "_%%_" +
+                              data['encodeKey1'] + "_%%_" + 
+                              data['encodeKey2'] + "_%%_" + 
+                              data['encoded_mnemonic']; 
+      
+      console.log("[____] Login with info:", combinedRespond);
+     
+      response(response_type.GOOGLE_SIGNIN, combinedRespond)
+    }
+    else{
+      console.log("[____] Creating a new account...")
+      response(response_type.GOOGLE_SIGNUP, "GetUserInfo");
+    }
+
+  } catch (error) {
+    console.error("[____] Error Reading User Info: ", error);
+  }
+}
+
+
+
+auth.onAuthStateChanged(user => {
+  
+  
+  if (user){
+    // When a Google user is signed in, we reset the state for personal wallets
+    // to ensure a clean slate, preventing potential conflicts after a refresh.
+    providerNEW = null;
+    signerNEW = null;
+    response(response_type.GOOGLE_IS_SIGNIN);
+    console.log("[____] GOOGLE_IS_SIGNIN")
+  }
+  
+});
 document.body.style.backgroundColor = "black";
+
+async function OnUnityLoaded() {
+  console.log("OnUnityLoaded()")
+  if (auth.currentUser) {
+    response(response_type.GOOGLE_IS_SIGNIN);
+    console.log("[OnUnityLoaded] GOOGLE_IS_SIGNIN");
+  }
+
+}
+
+
