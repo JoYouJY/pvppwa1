@@ -416,6 +416,26 @@
         })(); // end of async block
       }
     </script>
+    <script>
+      // We removed the 'beforeinstallprompt' listener from here because 
+      // this page is inside an iframe. The event fires on the PARENT (index.html).
+
+      // Listen for 'I' key to trigger installation via parent
+      document.addEventListener('keydown', (event) => {
+          // Check for 'I' or 'i'
+          if (event.key.toLowerCase() === 'i') {
+              console.log("'I' key pressed in Game. Requesting PWA Install...");
+              // Send message to parent (index.html)
+              window.parent.postMessage('installPWA', '*');
+          }
+      });
+      
+      // Existing showInstallPrompt function can be kept empty or removed
+      // as it is now handled by index.html
+      function showInstallPrompt() {
+          window.parent.postMessage('installPWA', '*');
+      }
+    </script>
 
     <script>
       let deferredPrompt;
